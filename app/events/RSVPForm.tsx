@@ -3,10 +3,31 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
+type Event = {
+  id: string;
+  title: string;
+  date: string | null;
+};
+
+type RSVPFormData = {
+  name: string;
+  email: string;
+  phone: string;
+  event_id: string;
+};
+
 export default function RSVPForm() {
-  const [form, setForm] = useState({ name: "", email: "", phone: "", event_id: "" });
-  const [events, setEvents] = useState<{ id: string; title: string; date: string | null }[]>([]);
-  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState<RSVPFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    event_id: "",
+  });
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [submitted, setSubmitted] = useState<RSVPFormData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -19,24 +40,49 @@ export default function RSVPForm() {
     fetchEvents();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
+
     if (!form.name || !form.email || !form.event_id) {
-      alert("Please fill out all required fields.");
+      setErrorMsg("Please fill out all required fields.");
       return;
     }
-    console.log("RSVP submitted:", form);
-    setSubmitted(true);
+
+    setLoading(true);
+
+    const { error } = await supabase.from("rsvps").insert([
+      {
+        event_id: form.event_id,
+        name: form.name,
+        email: form.email,
+        phone: form.phone || null,
+      },
+    ]);
+
+    setLoading(false);
+
+    if (error) {
+      console.error("Supabase insert error:", error.message);
+      setErrorMsg("Something went wrong. Please try again later.");
+      return;
+    }
+
+    // Capture the submitted data safely and reset
+    setSubmitted({ ...form });
+    setForm({ name: "", email: "", phone: "", event_id: "" });
   };
 
   if (submitted) {
     return (
       <div className="bg-green-50 border border-green-300 rounded-lg p-4 text-green-700 text-center">
-        ✅ Thanks, {form.name}! Your RSVP has been received.
+        ✅ Thanks, {submitted.name}! Your RSVP has been received.
       </div>
     );
   }
@@ -51,10 +97,14 @@ export default function RSVPForm() {
         RSVP for an Event
       </h2>
 
-      {/* Use consistent box sizing and vertical spacing */}
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-300 text-red-700 text-sm rounded-md p-2 mb-4 text-center">
+          {errorMsg}
+        </div>
+      )}
+
       <div className="grid gap-5 sm:grid-cols-2">
-        {/* Full Name */}
-        <div className="sm:col-span-1">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Full Name *
           </label>
@@ -64,13 +114,12 @@ export default function RSVPForm() {
             value={form.name}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md px-3 py-2 h-11 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Jane Doe"
+            placeholder="Your full name"
             required
           />
         </div>
 
-        {/* Email */}
-        <div className="sm:col-span-1">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Email *
           </label>
@@ -80,13 +129,12 @@ export default function RSVPForm() {
             value={form.email}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md px-3 py-2 h-11 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="jane@example.com"
+            placeholder="you@example.com"
             required
           />
         </div>
 
-        {/* Phone */}
-        <div className="sm:col-span-1">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Phone
           </label>
@@ -100,8 +148,7 @@ export default function RSVPForm() {
           />
         </div>
 
-        {/* Event */}
-        <div className="sm:col-span-1">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Event *
           </label>
@@ -127,9 +174,14 @@ export default function RSVPForm() {
 
       <button
         type="submit"
-        className="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-md transition-colors"
+        disabled={loading}
+        className={`mt-8 w-full text-white font-medium py-3 rounded-md transition-colors ${
+          loading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700"
+        }`}
       >
-        Submit RSVP
+        {loading ? "Submitting..." : "Submit RSVP"}
       </button>
     </form>
   );
