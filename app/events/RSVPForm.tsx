@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function RSVPForm() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", event_id: "" });
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<{ id: string; title: string; date: string | null }[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
