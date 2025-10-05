@@ -15,6 +15,9 @@ export default function Navbar() {
           <Link href="/events" className="hover:text-blue-700">
             Events
           </Link>
+          <a href="/calendar" className="hover:text-blue-600 transition-colors">
+            Calendar
+          </a>
           <Link href="/photos" className="hover:text-blue-700">
             Photos
           </Link>
