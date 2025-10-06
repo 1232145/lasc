@@ -1,35 +1,34 @@
+// components/Hero.tsx
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative bg-[var(--background)] text-[var(--foreground)]">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center px-4 py-16 md:py-24 gap-10">
-        <div className="md:w-1/2">
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
-            Welcome to the Littlestown Area Senior Center
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-            A vibrant community supporting seniors through social connection,
-            activities, and lifelong learning.
-          </p>
-          <Link
-            href="/events"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition"
-          >
-            See Upcoming Events
-          </Link>
-        </div>
+    <section className="mt-4 relative h-[90vh] flex items-center justify-center text-center overflow-hidden rounded-b-3xl shadow-sm">
+      <Image
+        src="/images/lasc-building.jpg"
+        alt="Littlestown Area Senior Center building"
+        fill
+        priority
+        className="object-cover object-center"
+      />
+      {/* subtle blue filter for depth */}
+      <div className="absolute inset-0 bg-blue-900/30" />
 
-        <div className="md:w-1/2 flex justify-center">
-          <Image
-            src="/window.svg"
-            alt="Community at Littlestown Area Senior Center"
-            width={400}
-            height={400}
-            className="rounded-lg shadow-md"
-          />
-        </div>
+      {/* text container with translucent background */}
+      <div className="relative z-10 bg-white/40 backdrop-blur-sm px-6 py-8 rounded-xl shadow-md max-w-3xl mx-auto">
+        <h1 className="text-4xl md:text-5xl font-serif text-blue-900 font-semibold mb-3 leading-tight">
+          Littlestown Area Senior Center
+        </h1>
+        <p className="text-base md:text-lg text-gray-700 mb-6">
+          A welcoming place for older adults to connect, share, and thrive.
+        </p>
+        <Link
+          href="/events"
+          className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-semibold px-6 py-3 rounded-md shadow-sm transition-colors"
+        >
+          See Upcoming Events
+        </Link>
       </div>
     </section>
   );
