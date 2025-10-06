@@ -2,6 +2,7 @@ import Hero from "@/components/Hero";
 import FeaturedEvent from "@/components/FeaturedEvent";
 import ContactSection from "@/components/ContactSection";
 import AboutSection from "@/components/AboutSection";
+import SponsorshipSection from "@/components/SponsorshipSection";
 
 export default function HomePage() {
   return (
@@ -10,6 +11,7 @@ export default function HomePage() {
       <FeaturedEvent />
       <AboutSection />
       <ContactSection />
+      <SponsorshipSection />
     </>
   );
 }
