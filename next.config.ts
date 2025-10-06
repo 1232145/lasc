@@ -9,14 +9,19 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-
-        hostname: "images.unsplash.com",
+        hostname: "images.unsplash.com", // gallery
       },
-
       {
         protocol: "https",
-
-        hostname: "your-supabase-project-id.supabase.co",
+        hostname: "upload.wikimedia.org", // sponsor logos
+      },
+      {
+        protocol: "https",
+        hostname: "logos-world.net", // if others appear later
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.pixabay.com", // generic source
       },
     ],
   },
