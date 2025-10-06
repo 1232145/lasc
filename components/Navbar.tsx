@@ -40,10 +40,7 @@ export default function Navbar() {
             Resources
           </Link>
 
-          <Link
-            href="/contact"
-            className="hover:text-blue-700 transition-colors"
-          >
+          <Link href="/#contact" className="hover:text-blue-700">
             Contact
           </Link>
 
