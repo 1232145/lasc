@@ -50,6 +50,13 @@ export default function Navbar() {
           >
             Donate
           </Link>
+
+          <Link
+            href="/admin"
+            className="text-gray-600 hover:text-blue-700 transition-colors"
+          >
+            Admin
+          </Link>
         </div>
       </div>
     </nav>
