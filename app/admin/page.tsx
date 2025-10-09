@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
@@ -25,6 +25,131 @@ type RSVP = {
   events?: Event;
 };
 
+// Reusable Event Form Component
+const EventForm = ({ 
+  isEditing, 
+  onSubmit, 
+  onCancel, 
+  title,
+  formData,
+  onFormChange
+}: { 
+  isEditing: boolean; 
+  onSubmit: (e: React.FormEvent) => void; 
+  onCancel: () => void; 
+  title: string;
+  formData: {
+    title: string;
+    description: string;
+    date: string;
+    location: string;
+    capacity: string;
+    image_url: string;
+  };
+  onFormChange: (field: string, value: string) => void;
+}) => (
+  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Event Title *
+          </label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => onFormChange('title', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter event title"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Date *
+          </label>
+          <input
+            type="date"
+            value={formData.date}
+            onChange={(e) => onFormChange('date', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Location
+          </label>
+          <input
+            type="text"
+            value={formData.location}
+            onChange={(e) => onFormChange('location', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter event location"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Capacity
+          </label>
+          <input
+            type="number"
+            value={formData.capacity}
+            onChange={(e) => onFormChange('capacity', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter maximum capacity"
+            min="1"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Image URL
+          </label>
+          <input
+            type="url"
+            value={formData.image_url}
+            onChange={(e) => onFormChange('image_url', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="https://example.com/image.jpg"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => onFormChange('description', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter event description"
+            rows={3}
+          />
+        </div>
+      </div>
+      <div className="flex justify-end space-x-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={`px-4 py-2 text-white rounded-md cursor-pointer ${
+            isEditing 
+              ? 'bg-yellow-600 hover:bg-yellow-700' 
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {isEditing ? 'Update Event' : 'Create Event'}
+        </button>
+      </div>
+    </form>
+  </div>
+);
+
 export default function AdminPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [rsvps, setRsvps] = useState<RSVP[]>([]);
@@ -42,6 +167,7 @@ export default function AdminPage() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [eventsPerPage] = useState(10);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -99,6 +225,20 @@ export default function AdminPage() {
     setCurrentPage(page);
   };
 
+  const clearForm = () => {
+    setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
+  };
+
+  const handleCreateNewEvent = () => {
+    setShowCreateEvent(true);
+    setEditingEvent(null); // Close edit form if open
+    clearForm(); // Clear the form
+  };
+
+  const handleFormChange = useCallback((field: string, value: string) => {
+    setNewEvent(prev => ({ ...prev, [field]: value }));
+  }, []);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/admin/login');
@@ -140,6 +280,83 @@ export default function AdminPage() {
       alert('Error creating event');
     }
   };
+
+  const handleEditEvent = (event: Event) => {
+    setEditingEvent(event);
+    setShowCreateEvent(false); // Close create form if open
+    setNewEvent({
+      title: event.title,
+      description: event.description || '',
+      date: event.date ? event.date.split('T')[0] : '', // Convert to date format
+      location: event.location || '',
+      capacity: event.capacity?.toString() || '',
+      image_url: event.image_url || ''
+    });
+  };
+
+  const handleUpdateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingEvent || !newEvent.title || !newEvent.date) {
+      alert('Please fill in title and date');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({
+          title: newEvent.title,
+          description: newEvent.description || null,
+          date: newEvent.date,
+          location: newEvent.location || null,
+          capacity: newEvent.capacity ? parseInt(newEvent.capacity) : null,
+          image_url: newEvent.image_url || null
+        })
+        .eq('id', editingEvent.id);
+
+      if (error) {
+        console.error('Error updating event:', error);
+        alert('Error updating event');
+        return;
+      }
+
+      // Reset form and refresh data
+      setEditingEvent(null);
+      setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
+      fetchData();
+      alert('Event updated successfully!');
+    } catch (err) {
+      console.error('Error updating event:', err);
+      alert('Error updating event');
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
+    if (!confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+      if (error) {
+        console.error('Error deleting event:', error);
+        alert('Error deleting event');
+        return;
+      }
+
+      fetchData();
+      alert('Event deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      alert('Error deleting event');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -228,111 +445,41 @@ export default function AdminPage() {
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-800">Events</h2>
                   <button 
-                    onClick={() => setShowCreateEvent(true)}
+                    onClick={handleCreateNewEvent}
                     className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
                   >
                     Add New Event
                   </button>
                 </div>
 
+                {/* Edit Event Form */}
+                {editingEvent && (
+                  <EventForm
+                    isEditing={true}
+                    onSubmit={handleUpdateEvent}
+                    onCancel={() => {
+                      setEditingEvent(null);
+                      clearForm();
+                    }}
+                    title={`Edit Event: ${editingEvent.title}`}
+                    formData={newEvent}
+                    onFormChange={handleFormChange}
+                  />
+                )}
+
                 {/* Create Event Form */}
                 {showCreateEvent && (
-                  <div className="bg-gray-50 p-6 rounded-lg mb-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Create New Event</h3>
-                    <form onSubmit={handleCreateEvent} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Event Title *
-                          </label>
-                          <input
-                            type="text"
-                            value={newEvent.title}
-                            onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-                            placeholder="Enter event title"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date *
-                          </label>
-                          <input
-                            type="date"
-                            value={newEvent.date}
-                            onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Location
-                          </label>
-                          <input
-                            type="text"
-                            value={newEvent.location}
-                            onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-                            placeholder="Enter event location"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Capacity
-                          </label>
-                          <input
-                            type="number"
-                            value={newEvent.capacity}
-                            onChange={(e) => setNewEvent({...newEvent, capacity: e.target.value})}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-                            placeholder="Enter maximum capacity"
-                            min="1"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Image URL
-                          </label>
-                          <input
-                            type="url"
-                            value={newEvent.image_url}
-                            onChange={(e) => setNewEvent({...newEvent, image_url: e.target.value})}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-                            placeholder="https://example.com/image.jpg"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Description
-                          </label>
-                          <textarea
-                            value={newEvent.description}
-                            onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-                            placeholder="Enter event description"
-                            rows={3}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end space-x-3">
-                        <button
-                          type="button"
-                          onClick={() => setShowCreateEvent(false)}
-                          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
-                        >
-                          Create Event
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+                  <EventForm
+                    isEditing={false}
+                    onSubmit={handleCreateEvent}
+                    onCancel={() => {
+                      setShowCreateEvent(false);
+                      clearForm();
+                    }}
+                    title="Create New Event"
+                    formData={newEvent}
+                    onFormChange={handleFormChange}
+                  />
                 )}
                 
                 {events.length === 0 ? (
@@ -399,10 +546,16 @@ export default function AdminPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <button className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer">
+                              <button 
+                                onClick={() => handleEditEvent(event)}
+                                className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer"
+                              >
                                 Edit
                               </button>
-                              <button className="text-red-600 hover:text-red-900 cursor-pointer">
+                              <button 
+                                onClick={() => handleDeleteEvent(event.id, event.title)}
+                                className="text-red-600 hover:text-red-900 cursor-pointer"
+                              >
                                 Delete
                               </button>
                             </td>
