@@ -13,6 +13,7 @@
     "@fontsource/merriweather": "^5.2.11",
     "@fontsource/source-sans-3": "^5.2.9",
     "@fontsource/work-sans": "^5.2.8",
+    "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.58.0",
     "lucide-react": "^0.544.0",
     "next": "15.5.4",
