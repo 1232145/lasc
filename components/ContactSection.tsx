@@ -1,3 +1,5 @@
+import ContactForm from "@/components/ContactForm";
+
 export default function ContactSection() {
     return (
       <section
@@ -15,6 +17,9 @@ export default function ContactSection() {
               like to join, volunteer, or just stop by — you’re always welcome.
             </p>
           </div>
+
+          {/* Contact Form */}
+          <ContactForm />
   
           {/* Grid layout */}
           <div className="grid md:grid-cols-2 gap-10 items-start">
@@ -71,7 +76,7 @@ export default function ContactSection() {
                 height="100%"
                 loading="lazy"
                 allowFullScreen
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3045.3342824533475!2d-77.0916696846088!3d39.74427327944857!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c89f032eebf9c9%3A0x5bcb5d013c8a8e14!2sLittlestown%2C%20PA!5e0!3m2!1sen!2sus!4v1700000000000"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d766.9325861208231!2d-77.08900883034137!3d39.7457076982222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c84e1dcbf72d11%3A0x823ab3b8c55fa9ad!2sLittlestown%20Area%20Senior%20Center!5e0!3m2!1sen!2sus!4v1760628703687!5m2!1sen!2sus"
               ></iframe>
             </div>
           </div>

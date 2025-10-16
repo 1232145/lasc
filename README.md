@@ -37,11 +37,15 @@ git push origin feat/fe-01-global-layout
 ```
 
 ## Environment Variables
-Copy from `.env.example` to `.env.local` and fill with real Supabase keys:
+Copy from `.env.example` to `.env.local` and fill with real Supabase keys and email account information:
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+EMAIL_USER=
+EMAIL_APP_PASSWORD=
 ```
+
+For email account to work: set up 2-factor authentication, go to mangage passwords, generate app pasword.
 
 ## Deployment
 Automatic via Vercel (when connected to GitHub).
