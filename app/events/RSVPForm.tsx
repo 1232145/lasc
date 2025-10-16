@@ -57,6 +57,14 @@ export default function RSVPForm() {
 
     setLoading(true);
 
+    // Get the selected event details for email
+    const selectedEvent = events.find(event => event.id === form.event_id);
+    if (!selectedEvent) {
+      setErrorMsg("Selected event not found. Please try again.");
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.from("rsvps").insert([
       {
         event_id: form.event_id,
@@ -66,13 +74,33 @@ export default function RSVPForm() {
       },
     ]);
 
-    setLoading(false);
-
     if (error) {
       console.error("Supabase insert error:", error.message);
       setErrorMsg("Something went wrong. Please try again later.");
+      setLoading(false);
       return;
     }
+
+    // Send confirmation email
+    try {
+      await fetch('/api/send-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          eventTitle: selectedEvent.title,
+          eventDate: selectedEvent.date,
+        }),
+      });
+    } catch (emailError) {
+      console.warn('Email sending failed, but RSVP was saved:', emailError);
+      // Don't show error to user since RSVP was saved successfully
+    }
+
+    setLoading(false);
 
     // Capture the submitted data safely and reset
     setSubmitted({ ...form });
