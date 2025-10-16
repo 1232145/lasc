@@ -1,3 +1,5 @@
+import ContactForm from "@/components/ContactForm";
+
 export default function ContactSection() {
     return (
       <section
@@ -15,6 +17,9 @@ export default function ContactSection() {
               like to join, volunteer, or just stop by — you’re always welcome.
             </p>
           </div>
+
+          {/* Contact Form */}
+          <ContactForm />
   
           {/* Grid layout */}
           <div className="grid md:grid-cols-2 gap-10 items-start">

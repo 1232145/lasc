@@ -38,3 +38,46 @@ export async function sendRSVPConfirmation(name: string, email: string, eventTit
     return { success: false, error };
   }
 }
+
+export async function sendContactConfirmation(name: string, email: string) {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'LASC: Thanks for contacting us!',
+      html: `
+        <p>Hi ${name},</p>
+        <p>Thanks for reaching out! We received your message and will get back to you as soon as we can.</p>
+        <p>Best,<br/>LASC Team</p>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Contact confirmation email failed:', error);
+    return { success: false, error };
+  }
+}
+
+export async function notifyAdminOfContact(name: string, email: string, message: string) {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER, // sending email to self
+      subject: 'New Contact Form Submission',
+      html: `
+        <h3>New message from: ${name}</h3>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message.replace(/\n/g, '<br/>')}</p>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Admin notification failed:', error);
+    return { success: false, error };
+  }
+}
