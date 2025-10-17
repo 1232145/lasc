@@ -25,18 +25,29 @@ type RSVP = {
   events?: Event;
 };
 
+type Photo = {
+  id: string;
+  title: string;
+  description?: string;
+  event_title?: string;
+  year?: number;
+  taken_at?: string;
+  image_url: string;
+  created_at?: string;
+};
+
 // Reusable Event Form Component
-const EventForm = ({ 
-  isEditing, 
-  onSubmit, 
-  onCancel, 
+const EventForm = ({
+  isEditing,
+  onSubmit,
+  onCancel,
   title,
   formData,
   onFormChange
-}: { 
-  isEditing: boolean; 
-  onSubmit: (e: React.FormEvent) => void; 
-  onCancel: () => void; 
+}: {
+  isEditing: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  onCancel: () => void;
   title: string;
   formData: {
     title: string;
@@ -137,11 +148,10 @@ const EventForm = ({
         </button>
         <button
           type="submit"
-          className={`px-4 py-2 text-white rounded-md cursor-pointer ${
-            isEditing 
-              ? 'bg-yellow-600 hover:bg-yellow-700' 
+          className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
+              ? 'bg-yellow-600 hover:bg-yellow-700'
               : 'bg-blue-600 hover:bg-blue-700'
-          }`}
+            }`}
         >
           {isEditing ? 'Update Event' : 'Create Event'}
         </button>
@@ -150,13 +160,136 @@ const EventForm = ({
   </div>
 );
 
+const PhotoForm = ({
+  isEditing,
+  onSubmit,
+  onCancel,
+  formData,
+  onFormChange
+}: {
+  isEditing: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  onCancel: () => void;
+  formData: {
+    title: string;
+    description: string;
+    event_title: string;
+    year: string;
+    taken_at: string;
+    image_url: string;
+  };
+  onFormChange: (field: string, value: string) => void;
+}) => (
+  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+      {isEditing ? "Edit Photo" : "Add New Photo"}
+    </h3>
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Photo Title *
+          </label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => onFormChange('title', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter photo title"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Event Title
+          </label>
+          <input
+            type="text"
+            value={formData.event_title}
+            onChange={(e) => onFormChange('event_title', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Associated event (if any)"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Year
+          </label>
+          <input
+            type="number"
+            value={formData.year}
+            onChange={(e) => onFormChange('year', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="e.g. 2025"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Taken At
+          </label>
+          <input
+            type="date"
+            value={formData.taken_at}
+            onChange={(e) => onFormChange('taken_at', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Image URL
+          </label>
+          <input
+            type="url"
+            value={formData.image_url}
+            onChange={(e) => onFormChange('image_url', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="https://example.com/photo.jpg"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => onFormChange('description', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter photo description"
+            rows={3}
+          />
+        </div>
+      </div>
+      <div className="flex justify-end space-x-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
+              ? 'bg-yellow-600 hover:bg-yellow-700'
+              : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+        >
+          {isEditing ? 'Update Photo' : 'Create Photo'}
+        </button>
+      </div>
+    </form>
+  </div>
+);
+
 export default function AdminPage() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [rsvps, setRsvps] = useState<RSVP[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'events' | 'rsvps'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'rsvps' | 'photos'>('events');
   const [user, setUser] = useState<any>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showCreatePhoto, setShowCreatePhoto] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -165,6 +298,15 @@ export default function AdminPage() {
     capacity: '',
     image_url: ''
   });
+  const [newPhoto, setNewPhoto] = useState({
+    title: '',
+    description: '',
+    event_title: '',
+    year: '',
+    taken_at: '',
+    image_url: ''
+  });
+  const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [eventsPerPage] = useState(10);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -186,7 +328,7 @@ export default function AdminPage() {
 
   const fetchData = async () => {
     setLoading(true);
-    
+
     // Fetch events
     const { data: eventsData } = await supabase
       .from('events')
@@ -206,8 +348,15 @@ export default function AdminPage() {
       `)
       .order('created_at', { ascending: false });
 
+    // Fetch Photos  
+    const { data: photosData } = await supabase
+      .from('photos')
+      .select('*')
+      .order('created_at', { ascending: false });
+
     setEvents(eventsData || []);
     setRsvps(rsvpsData || []);
+    setPhotos(photosData || []);
     setLoading(false);
   };
 
@@ -246,7 +395,7 @@ export default function AdminPage() {
 
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newEvent.title || !newEvent.date) {
       alert('Please fill in title and date');
       return;
@@ -296,7 +445,7 @@ export default function AdminPage() {
 
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingEvent || !newEvent.title || !newEvent.date) {
       alert('Please fill in title and date');
       return;
@@ -357,6 +506,64 @@ export default function AdminPage() {
     }
   };
 
+  const handlePhotoFormChange = (field: string, value: string) => {
+    setNewPhoto(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreatePhoto = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.from('photos').insert([{
+      ...newPhoto,
+      year: newPhoto.year ? parseInt(newPhoto.year) : null,
+      taken_at: newPhoto.taken_at || null
+    }]);
+    if (!error) {
+      setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+      fetchData();
+      alert('Photo added successfully!');
+    }
+  };
+
+  const handleEditPhoto = (photo: Photo) => {
+    setEditingPhoto(photo);
+    setNewPhoto({
+      title: photo.title,
+      description: photo.description || '',
+      event_title: photo.event_title || '',
+      year: photo.year?.toString() || '',
+      taken_at: photo.taken_at?.split('T')[0] || '',
+      image_url: photo.image_url || ''
+    });
+  };
+
+  const handleUpdatePhoto = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPhoto) return;
+    const { error } = await supabase
+      .from('photos')
+      .update({
+        ...newPhoto,
+        year: newPhoto.year ? parseInt(newPhoto.year) : null,
+        taken_at: newPhoto.taken_at || null
+      })
+      .eq('id', editingPhoto.id);
+
+    if (!error) {
+      setEditingPhoto(null);
+      setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+      fetchData();
+      alert('Photo updated successfully!');
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: string) => {
+    if (!confirm('Are you sure you want to delete this photo?')) return;
+    const { error } = await supabase.from('photos').delete().eq('id', photoId);
+    if (!error) {
+      fetchData();
+      alert('Photo deleted successfully!');
+    }
+  };
 
   if (loading) {
     return (
@@ -418,23 +625,30 @@ export default function AdminPage() {
             <nav className="flex space-x-8 px-6">
               <button
                 onClick={() => setActiveTab('events')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
-                  activeTab === 'events'
+                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'events'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Events ({events.length})
               </button>
               <button
                 onClick={() => setActiveTab('rsvps')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
-                  activeTab === 'rsvps'
+                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'rsvps'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 RSVPs ({rsvps.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('photos')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'photos'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Photos ({photos.length})
               </button>
             </nav>
           </div>
@@ -444,7 +658,7 @@ export default function AdminPage() {
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-800">Events</h2>
-                  <button 
+                  <button
                     onClick={handleCreateNewEvent}
                     className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
                   >
@@ -481,7 +695,7 @@ export default function AdminPage() {
                     onFormChange={handleFormChange}
                   />
                 )}
-                
+
                 {events.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">No events found.</p>
                 ) : (
@@ -515,56 +729,56 @@ export default function AdminPage() {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {currentEvents.map((event) => (
-                          <tr key={event.id}>
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-medium text-gray-900 max-w-xs whitespace-normal">
-                                {event.title}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div 
-                                className="text-sm text-gray-500 max-w-lg whitespace-normal max-h-20 overflow-y-auto"
-                                style={{ maxHeight: '5rem' }}
-                              >
-                                {event.description || '-'}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {event.date ? new Date(event.date).toLocaleDateString() : 'TBD'}
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm text-gray-500 max-w-2xl whitespace-normal">
-                                {event.location || '-'}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {event.capacity ? `${event.capacity} people` : '-'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                                {getRSVPCountForEvent(event.id)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <button 
-                                onClick={() => handleEditEvent(event)}
-                                className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer"
-                              >
-                                Edit
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteEvent(event.id, event.title)}
-                                className="text-red-600 hover:text-red-900 cursor-pointer"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                            <tr key={event.id}>
+                              <td className="px-6 py-4">
+                                <div className="text-sm font-medium text-gray-900 max-w-xs whitespace-normal">
+                                  {event.title}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div
+                                  className="text-sm text-gray-500 max-w-lg whitespace-normal max-h-20 overflow-y-auto"
+                                  style={{ maxHeight: '5rem' }}
+                                >
+                                  {event.description || '-'}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {event.date ? new Date(event.date).toLocaleDateString() : 'TBD'}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="text-sm text-gray-500 max-w-2xl whitespace-normal">
+                                  {event.location || '-'}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {event.capacity ? `${event.capacity} people` : '-'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                  {getRSVPCountForEvent(event.id)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button
+                                  onClick={() => handleEditEvent(event)}
+                                  className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteEvent(event.id, event.title)}
+                                  className="text-red-600 hover:text-red-900 cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
-                    
+
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
                       <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
@@ -601,22 +815,21 @@ export default function AdminPage() {
                               >
                                 Previous
                               </button>
-                              
+
                               {/* Page Numbers */}
                               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                 <button
                                   key={page}
                                   onClick={() => handlePageChange(page)}
-                                  className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                    page === currentPage
+                                  className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${page === currentPage
                                       ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                  }`}
+                                    }`}
                                 >
                                   {page}
                                 </button>
                               ))}
-                              
+
                               <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}
@@ -632,7 +845,7 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
-            ) : (
+            ) : activeTab === 'rsvps' ? (
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-800">Recent RSVPs</h2>
@@ -640,7 +853,7 @@ export default function AdminPage() {
                     Export Data
                   </button>
                 </div>
-                
+
                 {rsvps.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">No RSVPs found.</p>
                 ) : (
@@ -690,6 +903,72 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
+            ) : (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">Photos</h2>
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
+                    onClick={() => {
+                      setEditingPhoto(null); // sets isEditing to false in PhotoForm
+                      setNewPhoto({
+                        title: '',
+                        description: '',
+                        event_title: '',
+                        year: '',
+                        taken_at: '',
+                        image_url: '',
+                      });
+                      setShowCreatePhoto(true);
+                    }}>
+                    Add New Photo
+                  </button>
+                </div>
+
+                {(editingPhoto !== null || showCreatePhoto) && (
+                  <PhotoForm
+                    isEditing={!!editingPhoto}
+                    onSubmit={editingPhoto ? handleUpdatePhoto : handleCreatePhoto}
+                    onCancel={() => {
+                      setEditingPhoto(null);
+                      setNewPhoto({
+                        title: '',
+                        description: '',
+                        event_title: '',
+                        year: '',
+                        taken_at: '',
+                        image_url: '',
+                      });
+                      setShowCreatePhoto(false);
+                    }}
+                    formData={newPhoto}
+                    onFormChange={handlePhotoFormChange}
+                  />
+                )}
+
+                {photos.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No photos found.</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {photos.map(photo => (
+                      <div key={photo.id} className="bg-white border rounded-lg shadow-sm p-4">
+                        <img
+                          src={photo.image_url}
+                          alt={photo.title}
+                          className="w-full h-48 object-cover rounded mb-2"
+                        />
+                        <h3 className="font-semibold text-gray-800">{photo.title}</h3>
+                        <p className="text-sm text-gray-600 truncate">{photo.description}</p>
+                        <p className="text-xs text-gray-400">Taken: {photo.taken_at?.split('T')[0]}</p>
+                        <div className="flex justify-end space-x-2 mt-3">
+                          <button className="text-blue-600 hover:underline text-sm" onClick={() => handleEditPhoto(photo)}>Edit</button>
+                          <button className="text-red-600 hover:underline text-sm" onClick={() => handleDeletePhoto(photo.id)}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             )}
           </div>
         </div>
