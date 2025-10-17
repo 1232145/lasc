@@ -141,10 +141,9 @@ export default function GalleryClient() {
                   className="object-cover w-full h-64 transform group-hover:scale-105 transition-transform duration-300"
                 />
 
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-end justify-center">
-                  <div className="text-white text-center opacity-0 group-hover:opacity-100 mb-4 px-3">
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all z-10 flex items-end justify-center">
+                  <div className="text-white text-center opacity-0 group-hover:opacity-100 mb-4 px-3 transition-opacity duration-300">
                     <p className="font-medium">{photo.title}</p>
-
                     {photo.event_title && (
                       <p className="text-sm opacity-80">{photo.event_title}</p>
                     )}
@@ -159,11 +158,10 @@ export default function GalleryClient() {
               <button
                 onClick={handleLoadMore}
                 disabled={loading}
-                className={`px-5 py-2 rounded-md font-medium transition-colors ${
-                  loading
+                className={`px-5 py-2 rounded-md font-medium transition-colors ${loading
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
-                }`}
+                  }`}
               >
                 {loading ? "Loading..." : "Load More"}
               </button>
