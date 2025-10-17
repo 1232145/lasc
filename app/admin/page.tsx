@@ -149,8 +149,8 @@ const EventForm = ({
         <button
           type="submit"
           className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
-              ? 'bg-yellow-600 hover:bg-yellow-700'
-              : 'bg-blue-600 hover:bg-blue-700'
+            ? 'bg-yellow-600 hover:bg-yellow-700'
+            : 'bg-blue-600 hover:bg-blue-700'
             }`}
         >
           {isEditing ? 'Update Event' : 'Create Event'}
@@ -270,8 +270,8 @@ const PhotoForm = ({
         <button
           type="submit"
           className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
-              ? 'bg-yellow-600 hover:bg-yellow-700'
-              : 'bg-blue-600 hover:bg-blue-700'
+            ? 'bg-yellow-600 hover:bg-yellow-700'
+            : 'bg-blue-600 hover:bg-blue-700'
             }`}
         >
           {isEditing ? 'Update Photo' : 'Create Photo'}
@@ -290,6 +290,7 @@ export default function AdminPage() {
   const [user, setUser] = useState<any>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreatePhoto, setShowCreatePhoto] = useState(false);
+  const [sortPhotosBy, setSortPhotosBy] = useState<"uploaded" | "taken">("taken");
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -626,8 +627,8 @@ export default function AdminPage() {
               <button
                 onClick={() => setActiveTab('events')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'events'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 Events ({events.length})
@@ -635,8 +636,8 @@ export default function AdminPage() {
               <button
                 onClick={() => setActiveTab('rsvps')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'rsvps'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 RSVPs ({rsvps.length})
@@ -644,8 +645,8 @@ export default function AdminPage() {
               <button
                 onClick={() => setActiveTab('photos')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'photos'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 Photos ({photos.length})
@@ -822,8 +823,8 @@ export default function AdminPage() {
                                   key={page}
                                   onClick={() => handlePageChange(page)}
                                   className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${page === currentPage
-                                      ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                                     }`}
                                 >
                                   {page}
@@ -945,26 +946,57 @@ export default function AdminPage() {
                   />
                 )}
 
+                <div className="flex justify-end mb-4">
+                  <label className="mr-2 text-sm text-gray-700">Sort by:</label>
+                  <select
+                    value={sortPhotosBy}
+                    onChange={(e) => setSortPhotosBy(e.target.value as "uploaded" | "taken")}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none"
+                  >
+                    <option value="taken">Date Taken</option>
+                    <option value="uploaded">Date Uploaded</option>
+                  </select>
+                </div>
+
                 {photos.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">No photos found.</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {photos.map(photo => (
-                      <div key={photo.id} className="bg-white border rounded-lg shadow-sm p-4">
-                        <img
-                          src={photo.image_url}
-                          alt={photo.title}
-                          className="w-full h-48 object-cover rounded mb-2"
-                        />
-                        <h3 className="font-semibold text-gray-800">{photo.title}</h3>
-                        <p className="text-sm text-gray-600 truncate">{photo.description}</p>
-                        <p className="text-xs text-gray-400">Taken: {photo.taken_at?.split('T')[0]}</p>
-                        <div className="flex justify-end space-x-2 mt-3">
-                          <button className="text-blue-600 hover:underline text-sm" onClick={() => handleEditPhoto(photo)}>Edit</button>
-                          <button className="text-red-600 hover:underline text-sm" onClick={() => handleDeletePhoto(photo.id)}>Delete</button>
+                    {photos
+                      .slice()
+                      .sort((a, b) => {
+                        const aDate = new Date(String(sortPhotosBy === "taken" ? a.taken_at : a.created_at));
+                        const bDate = new Date(String(sortPhotosBy === "taken" ? b.taken_at : b.created_at));
+                        return bDate.getTime() - aDate.getTime(); // Newest first
+                      })
+                      .map(photo => (
+                        <div key={photo.id} className="bg-white border rounded-lg shadow-sm p-4">
+                          <img
+                            src={photo.image_url}
+                            alt={photo.title}
+                            className="w-full h-48 object-cover rounded mb-2"
+                          />
+                          <h3 className="font-semibold text-gray-800">{photo.title}</h3>
+                          <p className="text-sm text-gray-600 truncate">{photo.description}</p>
+                          <p className="text-xs text-gray-400">
+                            Taken: {photo.taken_at?.split("T")[0]}
+                          </p>
+                          <div className="flex justify-end space-x-2 mt-3">
+                            <button
+                              className="text-blue-600 hover:underline text-sm"
+                              onClick={() => handleEditPhoto(photo)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="text-red-600 hover:underline text-sm"
+                              onClick={() => handleDeletePhoto(photo.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
               </div>
