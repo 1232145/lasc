@@ -35,7 +35,7 @@ export default function Calendar() {
 
     // Format for FullCalendar
     const calendarEvents = events
-        .filter((e) => !!e.date)
+        .filter((e): e is Event & { date: string } => e.date !== null)
         .map((event) => ({
             id: event.id,
             title: event.title,
