@@ -66,7 +66,7 @@ export default function EventCard({ event }: { event: any }) {
 
       <p className="text-gray-600 mb-1 text-lg">
         {event.date
-          ? new Date(event.date).toLocaleDateString("en-US", {
+          ? new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",
               day: "numeric",
