@@ -36,6 +36,15 @@ type Photo = {
   created_at?: string;
 };
 
+type Resource = {
+  id: string;
+  title: string;
+  description?: string;
+  url: string;
+  category?: string;
+  created_at: string;
+};
+
 // Reusable Event Form Component
 const EventForm = ({
   isEditing,
@@ -281,15 +290,115 @@ const PhotoForm = ({
   </div>
 );
 
+// Reusable Resource Form Component
+const ResourceForm = ({
+  isEditing,
+  onSubmit,
+  onCancel,
+  title,
+  formData,
+  onFormChange
+}: {
+  isEditing: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  onCancel: () => void;
+  title: string;
+  formData: {
+    title: string;
+    description: string;
+    url: string;
+    category: string;
+  };
+  onFormChange: (field: string, value: string) => void;
+}) => (
+  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Resource Title *
+          </label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => onFormChange('title', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter resource title"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Category
+          </label>
+          <input
+            type="text"
+            value={formData.category}
+            onChange={(e) => onFormChange('category', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="e.g. Health, Transportation, Social Services"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            URL *
+          </label>
+          <input
+            type="url"
+            value={formData.url}
+            onChange={(e) => onFormChange('url', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="https://example.com"
+            required
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => onFormChange('description', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter resource description"
+            rows={3}
+          />
+        </div>
+      </div>
+      <div className="flex justify-end space-x-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
+            ? 'bg-yellow-600 hover:bg-yellow-700'
+            : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+        >
+          {isEditing ? 'Update Resource' : 'Create Resource'}
+        </button>
+      </div>
+    </form>
+  </div>
+);
+
 export default function AdminPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [rsvps, setRsvps] = useState<RSVP[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'events' | 'rsvps' | 'photos'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'rsvps' | 'photos' | 'resources'>('events');
   const [user, setUser] = useState<any>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreatePhoto, setShowCreatePhoto] = useState(false);
+  const [showCreateResource, setShowCreateResource] = useState(false);
   const [sortPhotosBy, setSortPhotosBy] = useState<"uploaded" | "taken">("taken");
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -307,7 +416,14 @@ export default function AdminPage() {
     taken_at: '',
     image_url: ''
   });
+  const [newResource, setNewResource] = useState({
+    title: '',
+    description: '',
+    url: '',
+    category: ''
+  });
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
+  const [editingResource, setEditingResource] = useState<Resource | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [eventsPerPage] = useState(10);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -355,9 +471,17 @@ export default function AdminPage() {
       .select('*')
       .order('created_at', { ascending: false });
 
+    // Fetch Resources
+    const { data: resourcesData } = await supabase
+      .from('resources')
+      .select('*')
+      .order('category', { ascending: true })
+      .order('title', { ascending: true });
+
     setEvents(eventsData || []);
     setRsvps(rsvpsData || []);
     setPhotos(photosData || []);
+    setResources(resourcesData || []);
     setLoading(false);
   };
 
@@ -566,6 +690,114 @@ export default function AdminPage() {
     }
   };
 
+  // Resource management functions
+  const handleResourceFormChange = (field: string, value: string) => {
+    setNewResource(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateResource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newResource.title || !newResource.url) {
+      alert('Please fill in title and URL');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('resources')
+        .insert([{
+          title: newResource.title,
+          description: newResource.description || null,
+          url: newResource.url,
+          category: newResource.category || null
+        }]);
+
+      if (error) {
+        console.error('Error creating resource:', error);
+        alert('Error creating resource');
+        return;
+      }
+
+      setNewResource({ title: '', description: '', url: '', category: '' });
+      setShowCreateResource(false);
+      fetchData();
+      alert('Resource created successfully!');
+    } catch (err) {
+      console.error('Error creating resource:', err);
+      alert('Error creating resource');
+    }
+  };
+
+  const handleEditResource = (resource: Resource) => {
+    setEditingResource(resource);
+    setShowCreateResource(false);
+    setNewResource({
+      title: resource.title,
+      description: resource.description || '',
+      url: resource.url,
+      category: resource.category || ''
+    });
+  };
+
+  const handleUpdateResource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingResource || !newResource.title || !newResource.url) {
+      alert('Please fill in title and URL');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('resources')
+        .update({
+          title: newResource.title,
+          description: newResource.description || null,
+          url: newResource.url,
+          category: newResource.category || null
+        })
+        .eq('id', editingResource.id);
+
+      if (error) {
+        console.error('Error updating resource:', error);
+        alert('Error updating resource');
+        return;
+      }
+
+      setEditingResource(null);
+      setNewResource({ title: '', description: '', url: '', category: '' });
+      fetchData();
+      alert('Resource updated successfully!');
+    } catch (err) {
+      console.error('Error updating resource:', err);
+      alert('Error updating resource');
+    }
+  };
+
+  const handleDeleteResource = async (resourceId: string, resourceTitle: string) => {
+    if (!confirm(`Are you sure you want to delete "${resourceTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('resources')
+        .delete()
+        .eq('id', resourceId);
+
+      if (error) {
+        console.error('Error deleting resource:', error);
+        alert('Error deleting resource');
+        return;
+      }
+
+      fetchData();
+      alert('Resource deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting resource:', err);
+      alert('Error deleting resource');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -603,7 +835,7 @@ export default function AdminPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-800">Total Events</h3>
             <p className="text-3xl font-bold text-blue-600">{events.length}</p>
@@ -613,10 +845,12 @@ export default function AdminPage() {
             <p className="text-3xl font-bold text-green-600">{rsvps.length}</p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-800">Upcoming Events</h3>
-            <p className="text-3xl font-bold text-orange-600">
-              {events.filter(event => event.date && new Date(event.date) > new Date()).length}
-            </p>
+            <h3 className="text-lg font-semibold text-gray-800">Resources</h3>
+            <p className="text-3xl font-bold text-purple-600">{resources.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-800">Photos</h3>
+            <p className="text-3xl font-bold text-orange-600">{photos.length}</p>
           </div>
         </div>
 
@@ -650,6 +884,15 @@ export default function AdminPage() {
                   }`}
               >
                 Photos ({photos.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('resources')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'resources'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Resources ({resources.length})
               </button>
             </nav>
           </div>
@@ -904,7 +1147,7 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
-            ) : (
+            ) : activeTab === 'photos' ? (
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-800">Photos</h2>
@@ -1000,8 +1243,127 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
+            ) : activeTab === 'resources' ? (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">Resources</h2>
+                  <button
+                    onClick={() => {
+                      setEditingResource(null);
+                      setNewResource({ title: '', description: '', url: '', category: '' });
+                      setShowCreateResource(true);
+                    }}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
+                  >
+                    Add New Resource
+                  </button>
+                </div>
 
-            )}
+                {/* Edit Resource Form */}
+                {editingResource && (
+                  <ResourceForm
+                    isEditing={true}
+                    onSubmit={handleUpdateResource}
+                    onCancel={() => {
+                      setEditingResource(null);
+                      setNewResource({ title: '', description: '', url: '', category: '' });
+                    }}
+                    title={`Edit Resource: ${editingResource.title}`}
+                    formData={newResource}
+                    onFormChange={handleResourceFormChange}
+                  />
+                )}
+
+                {/* Create Resource Form */}
+                {showCreateResource && (
+                  <ResourceForm
+                    isEditing={false}
+                    onSubmit={handleCreateResource}
+                    onCancel={() => {
+                      setShowCreateResource(false);
+                      setNewResource({ title: '', description: '', url: '', category: '' });
+                    }}
+                    title="Create New Resource"
+                    formData={newResource}
+                    onFormChange={handleResourceFormChange}
+                  />
+                )}
+
+                {resources.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No resources found.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Category
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            URL
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {resources.map((resource) => (
+                          <tr key={resource.id}>
+                            <td className="px-6 py-4">
+                              <div className="text-sm font-medium text-gray-900 max-w-xs whitespace-normal">
+                                {resource.title}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div
+                                className="text-sm text-gray-500 max-w-lg whitespace-normal max-h-20 overflow-y-auto"
+                                style={{ maxHeight: '5rem' }}
+                              >
+                                {resource.description || '-'}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {resource.category || '-'}
+                            </td>
+                            <td className="px-6 py-4">
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-900 text-sm max-w-xs truncate block"
+                              >
+                                {resource.url}
+                              </a>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => handleEditResource(resource)}
+                                className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteResource(resource.id, resource.title)}
+                                className="text-red-600 hover:text-red-900 cursor-pointer"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
 
