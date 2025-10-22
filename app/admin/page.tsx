@@ -36,6 +36,13 @@ type Photo = {
   created_at?: string;
 };
 
+type BoardMember = {
+  id: string;
+  name: string;
+  role: string;
+  order_index: number | null;
+};
+
 type Resource = {
   id: string;
   title: string;
@@ -300,6 +307,84 @@ const PhotoForm = ({
   </div>
 );
 
+const BoardMemberForm = ({
+  isEditing,
+  onSubmit,
+  onCancel,
+  formData,
+  onFormChange
+}: {
+  isEditing: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  onCancel: () => void;
+  formData: {
+    name: string;
+    role: string;
+    order_index: string;
+  };
+  onFormChange: (field: string, value: string) => void;
+}) => (
+  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+      {isEditing ? "Edit Board Member" : "Add New Board Member"}
+    </h3>
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => onFormChange("name", e.target.value)}
+            required
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
+            placeholder="Full Name"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+          <input
+            type="text"
+            value={formData.role}
+            onChange={(e) => onFormChange("role", e.target.value)}
+            required
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
+            placeholder="President, Treasurer, etc."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+          <input
+            type="number" //TODO Is this box necessary? I don't think manually inputting indices is that useful. If users want to re-order entries couldn't they just change the name/title of existing ones? It's only 2 datafields.
+            value={formData.order_index}
+            onChange={(e) => onFormChange("order_index", e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
+            placeholder="0, 1, 2..."
+          />
+        </div>
+      </div>
+      <div className="flex justify-end space-x-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={`px-4 py-2 text-white rounded-md ${isEditing
+            ? "bg-yellow-600 hover:bg-yellow-700"
+            : "bg-blue-600 hover:bg-blue-700"
+            }`}
+        >
+          {isEditing ? "Update Member" : "Create Member"}
+        </button>
+      </div>
+    </form>
+  </div>
+);
+
 // Reusable Resource Form Component
 const ResourceForm = ({
   isEditing,
@@ -513,10 +598,11 @@ export default function AdminPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [rsvps, setRsvps] = useState<RSVP[]>([]);
+  const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'events' | 'rsvps' | 'photos' | 'resources' | 'sponsors'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'rsvps' | 'photos' | 'board' | 'sponsors' | 'resources'>('events');
   const [user, setUser] = useState<any>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreatePhoto, setShowCreatePhoto] = useState(false);
@@ -539,6 +625,11 @@ export default function AdminPage() {
     taken_at: '',
     image_url: ''
   });
+  const [newBoardMember, setNewBoardMember] = useState({
+    name: '',
+    role: '',
+    order_index: '',
+  });
   const [newResource, setNewResource] = useState({
     title: '',
     description: '',
@@ -558,6 +649,8 @@ export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [eventsPerPage] = useState(10);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editingBoardMember, setEditingBoardMember] = useState<BoardMember | null>(null);
+  const [showCreateBoardMember, setShowCreateBoardMember] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -602,6 +695,12 @@ export default function AdminPage() {
       .select('*')
       .order('created_at', { ascending: false });
 
+    // Fetch Board Members
+    const { data: boardData } = await supabase
+      .from('board_members')
+      .select('*')
+      .order('order_index', { ascending: true });
+
     // Fetch Resources
     const { data: resourcesData } = await supabase
       .from('resources')
@@ -618,6 +717,7 @@ export default function AdminPage() {
     setEvents(eventsData || []);
     setRsvps(rsvpsData || []);
     setPhotos(photosData || []);
+    setBoardMembers(boardData || []);
     setResources(resourcesData || []);
     setSponsors(sponsorsData || []);
     setLoading(false);
@@ -825,6 +925,78 @@ export default function AdminPage() {
     if (!error) {
       fetchData();
       alert('Photo deleted successfully!');
+    }
+  };
+
+  const handleBoardFormChange = (field: string, value: string) => {
+    setNewBoardMember(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateBoardMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBoardMember.name || !newBoardMember.role) {
+      alert("Name and role are required.");
+      return;
+    }
+
+    const { error } = await supabase.from('board_members').insert([{
+      name: newBoardMember.name,
+      role: newBoardMember.role,
+      order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null,
+    }]);
+
+    if (error) {
+      alert("Error creating board member.");
+      console.error(error);
+    } else {
+      setNewBoardMember({ name: '', role: '', order_index: '' });
+      setShowCreateBoardMember(false);
+      fetchData();
+    }
+  };
+
+  const handleEditBoardMember = (member: any) => {
+    setEditingBoardMember(member);
+    setShowCreateBoardMember(false);
+    setNewBoardMember({
+      name: member.name,
+      role: member.role,
+      order_index: member.order_index?.toString() || ''
+    });
+  };
+
+  const handleUpdateBoardMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBoardMember) return;
+
+    const { error } = await supabase
+      .from('board_members')
+      .update({
+        name: newBoardMember.name,
+        role: newBoardMember.role,
+        order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null
+      })
+      .eq('id', editingBoardMember.id);
+
+    if (error) {
+      alert("Error updating board member.");
+      console.error(error);
+    } else {
+      setEditingBoardMember(null);
+      setNewBoardMember({ name: '', role: '', order_index: '' });
+      fetchData();
+    }
+  };
+
+  const handleDeleteBoardMember = async (id: string, name: string) => {
+    if (!confirm(`Delete board member "${name}"?`)) return;
+
+    const { error } = await supabase.from('board_members').delete().eq('id', id);
+    if (error) {
+      alert("Error deleting board member.");
+      console.error(error);
+    } else {
+      fetchData();
     }
   };
 
@@ -1137,6 +1309,15 @@ export default function AdminPage() {
                   }`}
               >
                 Photos ({photos.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('board')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'board'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Board ({boardMembers.length})
               </button>
               <button
                 onClick={() => setActiveTab('resources')}
@@ -1505,6 +1686,77 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
+            ) : activeTab === 'board' ? (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">Board Members</h2>
+                  <button
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    onClick={() => {
+                      setShowCreateBoardMember(true);
+                      setEditingBoardMember(null);
+                      setNewBoardMember({ name: '', role: '', order_index: '' });
+                    }}
+                  >
+                    Add New Member
+                  </button>
+                </div>
+                {(editingBoardMember || showCreateBoardMember) && (
+                  <BoardMemberForm
+                    isEditing={!!editingBoardMember}
+                    formData={newBoardMember}
+                    onFormChange={handleBoardFormChange}
+                    onSubmit={editingBoardMember ? handleUpdateBoardMember : handleCreateBoardMember}
+                    onCancel={() => {
+                      setShowCreateBoardMember(false);
+                      setEditingBoardMember(null);
+                      setNewBoardMember({ name: '', role: '', order_index: '' });
+                    }}
+                    //title={editingBoardMember ? `Edit: ${editingBoardMember.name}` : 'Create New Board Member'} //This line didn't work, i think it is unnecesary -Will
+                  />
+                )}
+
+                {boardMembers.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No board members found.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {boardMembers.map(member => (
+                          <tr key={member.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.role}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.order_index}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                              <button
+                                onClick={() => handleEditBoardMember(member)}
+                                className="text-blue-600 hover:text-blue-900"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBoardMember(member.id, member.name)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
             ) : activeTab === 'resources' ? (
               <div>
                 <div className="flex justify-between items-center mb-6">
