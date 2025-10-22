@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
+import RootManageUsersPanel from 'components/RootManageUsersPanel';
+
 type Event = {
   id: string;
   title: string;
@@ -651,12 +653,52 @@ export default function AdminPage() {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [editingBoardMember, setEditingBoardMember] = useState<BoardMember | null>(null);
   const [showCreateBoardMember, setShowCreateBoardMember] = useState(false);
+  const [isRoot, setIsRoot] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    checkUser();
-    fetchData();
-  }, []);
+  // 1. Get the user from Supabase when component mounts
+useEffect(() => {
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session?.user) {
+      setUser(session.user); // This triggers the next effect
+    } else {
+      router.push('/admin/login');
+    }
+  };
+
+  checkUser();
+}, []);
+
+// 2. Once the user is set, fetch app data (rsvps, events, etc.)
+useEffect(() => {
+  if (user) {
+    fetchData(); // fetches events/photos/etc
+  }
+}, [user]);
+
+// 3. Once the user is set, check their role
+useEffect(() => {
+  const checkIfRoot = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Error checking user role:', error.message);
+      return;
+    }
+
+    setIsRoot(data?.role === 'root');
+  };
+
+  checkIfRoot();
+}, [user]);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -721,6 +763,14 @@ export default function AdminPage() {
     setResources(resourcesData || []);
     setSponsors(sponsorsData || []);
     setLoading(false);
+
+    // check if current user has Root-access
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+    setIsRoot(roleData?.role === "root");
   };
 
   const getRSVPCountForEvent = (eventId: string) => {
@@ -1219,6 +1269,7 @@ export default function AdminPage() {
     }
   };
 
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -1712,7 +1763,7 @@ export default function AdminPage() {
                       setEditingBoardMember(null);
                       setNewBoardMember({ name: '', role: '', order_index: '' });
                     }}
-                    //title={editingBoardMember ? `Edit: ${editingBoardMember.name}` : 'Create New Board Member'} //This line didn't work, i think it is unnecesary -Will
+                  //title={editingBoardMember ? `Edit: ${editingBoardMember.name}` : 'Create New Board Member'} //This line didn't work, i think it is unnecesary -Will
                   />
                 )}
 
@@ -2018,6 +2069,11 @@ export default function AdminPage() {
                 )}
               </div>
             ) : null}
+            { isRoot && (
+              <div>
+                <RootManageUsersPanel/>
+              </div>
+            )}
           </div>
         </div>
 
