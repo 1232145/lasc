@@ -45,6 +45,16 @@ type Resource = {
   created_at: string;
 };
 
+type Sponsor = {
+  id: string;
+  name: string;
+  logo_url?: string;
+  description?: string;
+  website?: string;
+  order_index?: number;
+  created_at: string;
+};
+
 // Reusable Event Form Component
 const EventForm = ({
   isEditing,
@@ -388,17 +398,130 @@ const ResourceForm = ({
   </div>
 );
 
+// Reusable Sponsor Form Component
+const SponsorForm = ({
+  isEditing,
+  onSubmit,
+  onCancel,
+  title,
+  formData,
+  onFormChange
+}: {
+  isEditing: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  onCancel: () => void;
+  title: string;
+  formData: {
+    name: string;
+    logo_url: string;
+    description: string;
+    website: string;
+    order_index: string;
+  };
+  onFormChange: (field: string, value: string) => void;
+}) => (
+  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Sponsor Name *
+          </label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => onFormChange('name', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter sponsor name"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Logo URL
+          </label>
+          <input
+            type="url"
+            value={formData.logo_url}
+            onChange={(e) => onFormChange('logo_url', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="https://example.com/logo.png"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Website URL
+          </label>
+          <input
+            type="url"
+            value={formData.website}
+            onChange={(e) => onFormChange('website', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="https://example.com"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Display Order
+          </label>
+          <input
+            type="number"
+            value={formData.order_index}
+            onChange={(e) => onFormChange('order_index', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="1"
+            min="1"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => onFormChange('description', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
+            placeholder="Enter sponsor description"
+            rows={3}
+          />
+        </div>
+      </div>
+      <div className="flex justify-end space-x-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
+            ? 'bg-yellow-600 hover:bg-yellow-700'
+            : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+        >
+          {isEditing ? 'Update Sponsor' : 'Create Sponsor'}
+        </button>
+      </div>
+    </form>
+  </div>
+);
+
 export default function AdminPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [rsvps, setRsvps] = useState<RSVP[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'events' | 'rsvps' | 'photos' | 'resources'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'rsvps' | 'photos' | 'resources' | 'sponsors'>('events');
   const [user, setUser] = useState<any>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreatePhoto, setShowCreatePhoto] = useState(false);
   const [showCreateResource, setShowCreateResource] = useState(false);
+  const [showCreateSponsor, setShowCreateSponsor] = useState(false);
   const [sortPhotosBy, setSortPhotosBy] = useState<"uploaded" | "taken">("taken");
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -422,8 +545,16 @@ export default function AdminPage() {
     url: '',
     category: ''
   });
+  const [newSponsor, setNewSponsor] = useState({
+    name: '',
+    logo_url: '',
+    description: '',
+    website: '',
+    order_index: ''
+  });
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [eventsPerPage] = useState(10);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -478,10 +609,17 @@ export default function AdminPage() {
       .order('category', { ascending: true })
       .order('title', { ascending: true });
 
+    // Fetch Sponsors
+    const { data: sponsorsData } = await supabase
+      .from('sponsorships')
+      .select('*')
+      .order('order_index', { ascending: true });
+
     setEvents(eventsData || []);
     setRsvps(rsvpsData || []);
     setPhotos(photosData || []);
     setResources(resourcesData || []);
+    setSponsors(sponsorsData || []);
     setLoading(false);
   };
 
@@ -798,6 +936,117 @@ export default function AdminPage() {
     }
   };
 
+  // Sponsor management functions
+  const handleSponsorFormChange = (field: string, value: string) => {
+    setNewSponsor(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateSponsor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSponsor.name) {
+      alert('Please fill in sponsor name');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('sponsorships')
+        .insert([{
+          name: newSponsor.name,
+          logo_url: newSponsor.logo_url || null,
+          description: newSponsor.description || null,
+          website: newSponsor.website || null,
+          order_index: newSponsor.order_index ? parseInt(newSponsor.order_index) : null
+        }]);
+
+      if (error) {
+        console.error('Error creating sponsor:', error);
+        alert('Error creating sponsor');
+        return;
+      }
+
+      setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
+      setShowCreateSponsor(false);
+      fetchData();
+      alert('Sponsor created successfully!');
+    } catch (err) {
+      console.error('Error creating sponsor:', err);
+      alert('Error creating sponsor');
+    }
+  };
+
+  const handleEditSponsor = (sponsor: Sponsor) => {
+    setEditingSponsor(sponsor);
+    setShowCreateSponsor(false);
+    setNewSponsor({
+      name: sponsor.name,
+      logo_url: sponsor.logo_url || '',
+      description: sponsor.description || '',
+      website: sponsor.website || '',
+      order_index: sponsor.order_index?.toString() || ''
+    });
+  };
+
+  const handleUpdateSponsor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSponsor || !newSponsor.name) {
+      alert('Please fill in sponsor name');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('sponsorships')
+        .update({
+          name: newSponsor.name,
+          logo_url: newSponsor.logo_url || null,
+          description: newSponsor.description || null,
+          website: newSponsor.website || null,
+          order_index: newSponsor.order_index ? parseInt(newSponsor.order_index) : null
+        })
+        .eq('id', editingSponsor.id);
+
+      if (error) {
+        console.error('Error updating sponsor:', error);
+        alert('Error updating sponsor');
+        return;
+      }
+
+      setEditingSponsor(null);
+      setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
+      fetchData();
+      alert('Sponsor updated successfully!');
+    } catch (err) {
+      console.error('Error updating sponsor:', err);
+      alert('Error updating sponsor');
+    }
+  };
+
+  const handleDeleteSponsor = async (sponsorId: string, sponsorName: string) => {
+    if (!confirm(`Are you sure you want to delete "${sponsorName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('sponsorships')
+        .delete()
+        .eq('id', sponsorId);
+
+      if (error) {
+        console.error('Error deleting sponsor:', error);
+        alert('Error deleting sponsor');
+        return;
+      }
+
+      fetchData();
+      alert('Sponsor deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting sponsor:', err);
+      alert('Error deleting sponsor');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -835,7 +1084,7 @@ export default function AdminPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-800">Total Events</h3>
             <p className="text-3xl font-bold text-blue-600">{events.length}</p>
@@ -851,6 +1100,10 @@ export default function AdminPage() {
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-800">Photos</h3>
             <p className="text-3xl font-bold text-orange-600">{photos.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-800">Sponsors</h3>
+            <p className="text-3xl font-bold text-indigo-600">{sponsors.length}</p>
           </div>
         </div>
 
@@ -893,6 +1146,15 @@ export default function AdminPage() {
                   }`}
               >
                 Resources ({resources.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('sponsors')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'sponsors'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Sponsors ({sponsors.length})
               </button>
             </nav>
           </div>
@@ -1351,6 +1613,146 @@ export default function AdminPage() {
                               </button>
                               <button
                                 onClick={() => handleDeleteResource(resource.id, resource.title)}
+                                className="text-red-600 hover:text-red-900 cursor-pointer"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ) : activeTab === 'sponsors' ? (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">Sponsors</h2>
+                  <button
+                    onClick={() => {
+                      setEditingSponsor(null);
+                      setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
+                      setShowCreateSponsor(true);
+                    }}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
+                  >
+                    Add New Sponsor
+                  </button>
+                </div>
+
+                {/* Edit Sponsor Form */}
+                {editingSponsor && (
+                  <SponsorForm
+                    isEditing={true}
+                    onSubmit={handleUpdateSponsor}
+                    onCancel={() => {
+                      setEditingSponsor(null);
+                      setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
+                    }}
+                    title={`Edit Sponsor: ${editingSponsor.name}`}
+                    formData={newSponsor}
+                    onFormChange={handleSponsorFormChange}
+                  />
+                )}
+
+                {/* Create Sponsor Form */}
+                {showCreateSponsor && (
+                  <SponsorForm
+                    isEditing={false}
+                    onSubmit={handleCreateSponsor}
+                    onCancel={() => {
+                      setShowCreateSponsor(false);
+                      setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
+                    }}
+                    title="Create New Sponsor"
+                    formData={newSponsor}
+                    onFormChange={handleSponsorFormChange}
+                  />
+                )}
+
+                {sponsors.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No sponsors found.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Logo
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Website
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Order
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {sponsors.map((sponsor) => (
+                          <tr key={sponsor.id}>
+                            <td className="px-6 py-4">
+                              {sponsor.logo_url ? (
+                                <img
+                                  src={sponsor.logo_url}
+                                  alt={sponsor.name}
+                                  className="w-16 h-16 object-contain"
+                                />
+                              ) : (
+                                <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
+                                  No Logo
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {sponsor.name}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div
+                                className="text-sm text-gray-500 max-w-lg whitespace-normal max-h-20 overflow-y-auto"
+                                style={{ maxHeight: '5rem' }}
+                              >
+                                {sponsor.description || '-'}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              {sponsor.website ? (
+                                <a
+                                  href={sponsor.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-900 text-sm max-w-xs truncate block"
+                                >
+                                  {sponsor.website}
+                                </a>
+                              ) : (
+                                '-'
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {sponsor.order_index || '-'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => handleEditSponsor(sponsor)}
+                                className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSponsor(sponsor.id, sponsor.name)}
                                 className="text-red-600 hover:text-red-900 cursor-pointer"
                               >
                                 Delete
