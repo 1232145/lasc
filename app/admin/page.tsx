@@ -1431,7 +1431,7 @@ export default function AdminPage() {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {event.date ? new Date(event.date).toLocaleDateString() : 'TBD'}
+                                {event.date ? new Date(`${event.date}T00:00:00`).toLocaleDateString() : 'TBD'}
                               </td>
                               <td className="px-6 py-4">
                                 <div className="text-sm text-gray-500 max-w-2xl whitespace-normal">
