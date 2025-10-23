@@ -45,6 +45,16 @@ export default function EventCard({ event }: { event: any }) {
     setForm({ name: "", email: "", phone: "" });
     setTimeout(() => setSubmitted(false), 5000);
   };
+  
+  const formatTime = (timeString: string) => {
+    const [hours, minutes] = timeString.split(":").map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes);
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 transition hover:shadow-lg">
@@ -60,9 +70,7 @@ export default function EventCard({ event }: { event: any }) {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">
-        {event.title}
-      </h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">{event.title}</h2>
 
       <p className="text-gray-600 mb-1 text-lg">
         {event.date
@@ -73,6 +81,14 @@ export default function EventCard({ event }: { event: any }) {
             })
           : "Date TBD"}
       </p>
+
+      {/* show start/end time if they exist */}
+      {event.start_time && (
+        <p className="text-gray-500 mb-1 text-base">
+          🕒 {formatTime(event.start_time)}
+          {event.end_time ? ` – ${formatTime(event.end_time)}` : ""}
+        </p>
+      )}
 
       {event.location && (
         <p className="text-gray-500 mb-4">📍 {event.location}</p>
@@ -98,9 +114,7 @@ export default function EventCard({ event }: { event: any }) {
           className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200"
         >
           {errorMsg && (
-            <p className="text-red-600 text-sm text-center mb-2">
-              {errorMsg}
-            </p>
+            <p className="text-red-600 text-sm text-center mb-2">{errorMsg}</p>
           )}
 
           <div className="grid gap-3">
