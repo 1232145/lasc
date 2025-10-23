@@ -6,6 +6,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import EventCard from "./EventCard"; // Adjust path if needed
+import PrintCalendarButton from "./PrintCalendarButton";
 
 type Event = {
   id: string;
@@ -79,13 +80,7 @@ export default function Calendar() {
 
   return (
     <div className="relative printable-calendar">
-      <button
-        onClick={() => window.print()}
-        className="no-print mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-      >
-        Print Calendar
-      </button>
-
+      <PrintCalendarButton></PrintCalendarButton>
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
