@@ -33,7 +33,7 @@ export default function ContactSection() {
                 <li>
                   <strong>Address:</strong>{" "}
                   <span className="block">
-                    10 Elm Street, Littlestown, PA 17340
+                    10 East Locust Street, Littlestown, PA 17340
                   </span>
                 </li>
   
@@ -58,7 +58,7 @@ export default function ContactSection() {
                 </li>
   
                 <li>
-                  <strong>Hours:</strong> Mon–Fri, 8:30 AM – 4:30 PM
+                  <strong>Hours:</strong> Mon–Fri, 8:00 AM – 12:30 PM
                 </li>
   
                 <li>
