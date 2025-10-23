@@ -78,7 +78,14 @@ export default function Calendar() {
     }));
 
   return (
-    <div className="relative">
+    <div className="relative printable-calendar">
+      <button
+        onClick={() => window.print()}
+        className="no-print mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
+        Print Calendar
+      </button>
+
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
@@ -103,7 +110,7 @@ export default function Calendar() {
       {selectedEvent && (
         <div
           onClick={handleOverlayClick}
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300"
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300 no-print"
         >
           {/* Modal Content */}
           <div
