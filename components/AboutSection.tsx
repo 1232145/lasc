@@ -44,7 +44,7 @@ export default async function AboutSection() {
             <p>
               In 1983, the center sought a permanent home and was incorporated
               as a non-profit organization. By September 1985, the Board
-              purchased the building at <strong>10 Locust Street</strong>, and
+              purchased the building at <strong>10 E Locust Street</strong>, and
               renovations began under the direction of John Jacobs in January
               1986.
             </p>
