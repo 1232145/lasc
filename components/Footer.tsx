@@ -6,7 +6,7 @@ export default function Footer() {
           reserved.
         </p>
         <p className="mt-1">
-          10 Locust Street, Littlestown, PA 17340 · (717) 359-7743
+          10 E Locust Street, Littlestown, PA 17340 · (717) 359-7743
         </p>
       </footer>
     );
