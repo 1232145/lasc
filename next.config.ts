@@ -23,6 +23,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn.pixabay.com", // generic source
       },
+      {
+        protocol: "https",
+        hostname: "i.imgur.com", // imgur source
+      },
+      {
+        protocol: "https",
+        hostname: "biymlkhzjdwablqvkcma.supabase.co", // stored in the Supabase source
+      },
     ],
   },
 };
