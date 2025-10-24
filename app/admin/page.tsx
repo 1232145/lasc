@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import ImageUploader from "@/components/ImageUploader";
 
 import RootManageUsersPanel from 'components/RootManageUsersPanel';
 
@@ -141,16 +142,13 @@ const EventForm = ({
             min="1"
           />
         </div>
+        {/* 🖼️ Image Uploader replaces manual URL field */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Image URL
-          </label>
-          <input
-            type="url"
+          <ImageUploader
+            folder="events"
             value={formData.image_url}
-            onChange={(e) => onFormChange('image_url', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="https://example.com/image.jpg"
+            onUpload={(url) => onFormChange("image_url", url)}
+            label="Event Image"
           />
         </div>
         <div className="md:col-span-2">
@@ -263,15 +261,11 @@ const PhotoForm = ({
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Image URL
-          </label>
-          <input
-            type="url"
+          <ImageUploader
+            folder="gallery"
             value={formData.image_url}
-            onChange={(e) => onFormChange('image_url', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="https://example.com/photo.jpg"
+            onUpload={(url) => onFormChange('image_url', url)}
+            label="Photo"
           />
         </div>
         <div className="md:col-span-2">
@@ -524,16 +518,12 @@ const SponsorForm = ({
             required
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Logo URL
-          </label>
-          <input
-            type="url"
+        <div className="md:col-span-2">
+          <ImageUploader
+            folder="sponsors"
             value={formData.logo_url}
-            onChange={(e) => onFormChange('logo_url', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="https://example.com/logo.png"
+            onUpload={(url) => onFormChange('logo_url', url)}
+            label="Sponsor Logo"
           />
         </div>
         <div>
@@ -657,48 +647,48 @@ export default function AdminPage() {
   const router = useRouter();
 
   // 1. Get the user from Supabase when component mounts
-useEffect(() => {
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
 
-    if (session?.user) {
-      setUser(session.user); // This triggers the next effect
-    } else {
-      router.push('/admin/login');
+      if (session?.user) {
+        setUser(session.user); // This triggers the next effect
+      } else {
+        router.push('/admin/login');
+      }
+    };
+
+    checkUser();
+  }, []);
+
+  // 2. Once the user is set, fetch app data (rsvps, events, etc.)
+  useEffect(() => {
+    if (user) {
+      fetchData(); // fetches events/photos/etc
     }
-  };
+  }, [user]);
 
-  checkUser();
-}, []);
+  // 3. Once the user is set, check their role
+  useEffect(() => {
+    const checkIfRoot = async () => {
+      if (!user) return;
 
-// 2. Once the user is set, fetch app data (rsvps, events, etc.)
-useEffect(() => {
-  if (user) {
-    fetchData(); // fetches events/photos/etc
-  }
-}, [user]);
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
 
-// 3. Once the user is set, check their role
-useEffect(() => {
-  const checkIfRoot = async () => {
-    if (!user) return;
+      if (error) {
+        console.error('Error checking user role:', error.message);
+        return;
+      }
 
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
+      setIsRoot(data?.role === 'root');
+    };
 
-    if (error) {
-      console.error('Error checking user role:', error.message);
-      return;
-    }
-
-    setIsRoot(data?.role === 'root');
-  };
-
-  checkIfRoot();
-}, [user]);
+    checkIfRoot();
+  }, [user]);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -2069,9 +2059,9 @@ useEffect(() => {
                 )}
               </div>
             ) : null}
-            { isRoot && (
+            {isRoot && (
               <div>
-                <RootManageUsersPanel/>
+                <RootManageUsersPanel />
               </div>
             )}
           </div>
