@@ -3,606 +3,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import ImageUploader from "@/components/ImageUploader";
 import { useToast } from "@/contexts/ToastContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
-
 import RootManageUsersPanel from 'components/RootManageUsersPanel';
+import { StatsCards } from '@/components/admin/ui/StatsCards';
+import { TabNavigation } from '@/components/admin/ui/TabNavigation';
+import { EventsTab } from '@/components/admin/tabs/EventsTab';
+import { RSVPsTab } from '@/components/admin/tabs/RSVPsTab';
+import { PhotosTab } from '@/components/admin/tabs/PhotosTab';
+import { BoardTab } from '@/components/admin/tabs/BoardTab';
+import { ResourcesTab } from '@/components/admin/tabs/ResourcesTab';
+import { SponsorsTab } from '@/components/admin/tabs/SponsorsTab';
+import type { Event, RSVP, Photo, BoardMember, Resource, Sponsor } from '@/components/admin/types';
 
-type Event = {
-  id: string;
-  title: string;
-  date: string | null;
-  description?: string;
-  location?: string;
-  capacity?: number;
-  image_url?: string;
-  created_at: string;
-};
-
-type RSVP = {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  event_id: string;
-  created_at: string;
-  events?: Event;
-};
-
-type Photo = {
-  id: string;
-  title: string;
-  description?: string;
-  event_title?: string;
-  year?: number;
-  taken_at?: string;
-  image_url: string;
-  created_at?: string;
-};
-
-type BoardMember = {
-  id: string;
-  name: string;
-  role: string;
-  //order_index: number | null;
-  email: string;
-};
-
-type Resource = {
-  id: string;
-  title: string;
-  description?: string;
-  url: string;
-  category?: string;
-  created_at: string;
-};
-
-type Sponsor = {
-  id: string;
-  name: string;
-  logo_url?: string;
-  description?: string;
-  website?: string;
-  order_index?: number;
-  created_at: string;
-};
-
-// Reusable Event Form Component
-const EventForm = ({
-  isEditing,
-  onSubmit,
-  onCancel,
-  title,
-  formData,
-  onFormChange
-}: {
-  isEditing: boolean;
-  onSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
-  title: string;
-  formData: {
-    title: string;
-    description: string;
-    date: string;
-    location: string;
-    capacity: string;
-    image_url: string;
-  };
-  onFormChange: (field: string, value: string) => void;
-}) => (
-  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Event Title *
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => onFormChange('title', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter event title"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Date *
-          </label>
-          <input
-            type="date"
-            value={formData.date}
-            onChange={(e) => onFormChange('date', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Location
-          </label>
-          <input
-            type="text"
-            value={formData.location}
-            onChange={(e) => onFormChange('location', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter event location"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Capacity
-          </label>
-          <input
-            type="number"
-            value={formData.capacity}
-            onChange={(e) => onFormChange('capacity', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter maximum capacity"
-            min="1"
-          />
-        </div>
-        {/* 🖼️ Image Uploader replaces manual URL field */}
-        <div>
-          <ImageUploader
-            folder="events"
-            value={formData.image_url}
-            onUpload={(url) => onFormChange("image_url", url)}
-            label="Event Image"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => onFormChange('description', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter event description"
-            rows={3}
-          />
-        </div>
-      </div>
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
-            ? 'bg-yellow-600 hover:bg-yellow-700'
-            : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-        >
-          {isEditing ? 'Update Event' : 'Create Event'}
-        </button>
-      </div>
-    </form>
-  </div>
-);
-
-const PhotoForm = ({
-  isEditing,
-  onSubmit,
-  onCancel,
-  formData,
-  onFormChange
-}: {
-  isEditing: boolean;
-  onSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
-  formData: {
-    title: string;
-    description: string;
-    event_title: string;
-    year: string;
-    taken_at: string;
-    image_url: string;
-  };
-  onFormChange: (field: string, value: string) => void;
-}) => (
-  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">
-      {isEditing ? "Edit Photo" : "Add New Photo"}
-    </h3>
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Photo Title *
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => onFormChange('title', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter photo title"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Event Title
-          </label>
-          <input
-            type="text"
-            value={formData.event_title}
-            onChange={(e) => onFormChange('event_title', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Associated event (if any)"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Year
-          </label>
-          <input
-            type="number"
-            value={formData.year}
-            onChange={(e) => onFormChange('year', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="e.g. 2025"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Taken At
-          </label>
-          <input
-            type="date"
-            value={formData.taken_at}
-            onChange={(e) => onFormChange('taken_at', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <ImageUploader
-            folder="gallery"
-            value={formData.image_url}
-            onUpload={(url) => onFormChange('image_url', url)}
-            label="Photo"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => onFormChange('description', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter photo description"
-            rows={3}
-          />
-        </div>
-      </div>
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
-            ? 'bg-yellow-600 hover:bg-yellow-700'
-            : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-        >
-          {isEditing ? 'Update Photo' : 'Create Photo'}
-        </button>
-      </div>
-    </form>
-  </div>
-);
-
-const BoardMemberForm = ({
-  isEditing,
-  onSubmit,
-  onCancel,
-  formData,
-  onFormChange
-}: {
-  isEditing: boolean;
-  onSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
-  formData: {
-    name: string;
-    role: string;
-    order_index: string;
-    email: string;
-  };
-  onFormChange: (field: string, value: string) => void;
-}) => (
-  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">
-      {isEditing ? "Edit Board Member" : "Add New Board Member"}
-    </h3>
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => onFormChange("name", e.target.value)}
-            required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
-            placeholder="Full Name"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-          <input
-            type="text"
-            value={formData.role}
-            onChange={(e) => onFormChange("role", e.target.value)}
-            required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
-            placeholder="President, Treasurer, etc."
-          />
-        </div>
-        {/*
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
-          <input
-            type="number" //TODO Is this box necessary? I don't think manually inputting indices is that useful. If users want to re-order entries couldn't they just change the name/title of existing ones? It's only 2 datafields.
-            value={formData.order_index}
-            onChange={(e) => onFormChange("order_index", e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
-            placeholder="0, 1, 2..."
-          />
-        </div>
-        */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-          <input
-            type="text"
-            value={formData.email}
-            onChange={(e) => onFormChange("email", e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
-            placeholder="SomeAddress@email.com"
-          />
-        </div>
-      </div>
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className={`px-4 py-2 text-white rounded-md ${isEditing
-            ? "bg-yellow-600 hover:bg-yellow-700"
-            : "bg-blue-600 hover:bg-blue-700"
-            }`}
-        >
-          {isEditing ? "Update Member" : "Create Member"}
-        </button>
-      </div>
-    </form>
-  </div>
-);
-
-// Reusable Resource Form Component
-const ResourceForm = ({
-  isEditing,
-  onSubmit,
-  onCancel,
-  title,
-  formData,
-  onFormChange
-}: {
-  isEditing: boolean;
-  onSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
-  title: string;
-  formData: {
-    title: string;
-    description: string;
-    url: string;
-    category: string;
-  };
-  onFormChange: (field: string, value: string) => void;
-}) => (
-  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Resource Title *
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => onFormChange('title', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter resource title"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Category
-          </label>
-          <input
-            type="text"
-            value={formData.category}
-            onChange={(e) => onFormChange('category', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="e.g. Health, Transportation, Social Services"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            URL *
-          </label>
-          <input
-            type="url"
-            value={formData.url}
-            onChange={(e) => onFormChange('url', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="https://example.com"
-            required
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => onFormChange('description', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter resource description"
-            rows={3}
-          />
-        </div>
-      </div>
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
-            ? 'bg-yellow-600 hover:bg-yellow-700'
-            : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-        >
-          {isEditing ? 'Update Resource' : 'Create Resource'}
-        </button>
-      </div>
-    </form>
-  </div>
-);
-
-// Reusable Sponsor Form Component
-const SponsorForm = ({
-  isEditing,
-  onSubmit,
-  onCancel,
-  title,
-  formData,
-  onFormChange
-}: {
-  isEditing: boolean;
-  onSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
-  title: string;
-  formData: {
-    name: string;
-    logo_url: string;
-    description: string;
-    website: string;
-    order_index: string;
-  };
-  onFormChange: (field: string, value: string) => void;
-}) => (
-  <div className={`p-6 rounded-lg mb-6 border ${isEditing ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'}`}>
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Sponsor Name *
-          </label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => onFormChange('name', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter sponsor name"
-            required
-          />
-        </div>
-        <div className="md:col-span-2">
-          <ImageUploader
-            folder="sponsors"
-            value={formData.logo_url}
-            onUpload={(url) => onFormChange('logo_url', url)}
-            label="Sponsor Logo"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Website URL
-          </label>
-          <input
-            type="url"
-            value={formData.website}
-            onChange={(e) => onFormChange('website', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="https://example.com"
-          />
-        </div>
-        {/*
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Display Order
-          </label>
-          <input
-            type="number"
-            value={formData.order_index}
-            onChange={(e) => onFormChange('order_index', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="1"
-            min="1"
-          />
-        </div>
-        */}
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => onFormChange('description', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100"
-            placeholder="Enter sponsor description"
-            rows={3}
-          />
-        </div>
-      </div>
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className={`px-4 py-2 text-white rounded-md cursor-pointer ${isEditing
-            ? 'bg-yellow-600 hover:bg-yellow-700'
-            : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-        >
-          {isEditing ? 'Update Sponsor' : 'Create Sponsor'}
-        </button>
-      </div>
-    </form>
-  </div>
-);
 
 export default function AdminPage() {
   const { showSuccess, showError } = useToast();
@@ -808,8 +221,25 @@ export default function AdminPage() {
     clearForm(); // Clear the form
   };
 
+  // Generic form change handler
   const handleFormChange = useCallback((field: string, value: string) => {
     setNewEvent(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handlePhotoFormChange = useCallback((field: string, value: string) => {
+    setNewPhoto(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleBoardFormChange = useCallback((field: string, value: string) => {
+    setNewBoardMember(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleResourceFormChange = useCallback((field: string, value: string) => {
+    setNewResource(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleSponsorFormChange = useCallback((field: string, value: string) => {
+    setNewSponsor(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const handleLogout = async () => {
@@ -936,10 +366,6 @@ export default function AdminPage() {
     }
   };
 
-  const handlePhotoFormChange = (field: string, value: string) => {
-    setNewPhoto(prev => ({ ...prev, [field]: value }));
-  };
-
   const handleCreatePhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -1031,10 +457,6 @@ export default function AdminPage() {
       console.error('Error deleting photo:', err);
       showError('Error', 'Failed to delete photo. Please try again.');
     }
-  };
-
-  const handleBoardFormChange = (field: string, value: string) => {
-    setNewBoardMember(prev => ({ ...prev, [field]: value }));
   };
 
   const handleCreateBoardMember = async (e: React.FormEvent) => {
@@ -1138,10 +560,6 @@ export default function AdminPage() {
   };
 
   // Resource management functions
-  const handleResourceFormChange = (field: string, value: string) => {
-    setNewResource(prev => ({ ...prev, [field]: value }));
-  };
-
   const handleCreateResource = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newResource.title || !newResource.url) {
@@ -1252,10 +670,6 @@ export default function AdminPage() {
   };
 
   // Sponsor management functions
-  const handleSponsorFormChange = (field: string, value: string) => {
-    setNewSponsor(prev => ({ ...prev, [field]: value }));
-  };
-
   const handleCreateSponsor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSponsor.name) {
@@ -1369,6 +783,55 @@ export default function AdminPage() {
   };
 
 
+  // Helper functions for opening/closing forms
+  const openCreatePhoto = () => {
+    setEditingPhoto(null);
+    setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+    setShowCreatePhoto(true);
+  };
+
+  const closePhotoForm = () => {
+    setEditingPhoto(null);
+    setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+    setShowCreatePhoto(false);
+  };
+
+  const openCreateBoardMember = () => {
+    setShowCreateBoardMember(true);
+    setEditingBoardMember(null);
+    setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
+  };
+
+  const closeBoardMemberForm = () => {
+    setShowCreateBoardMember(false);
+    setEditingBoardMember(null);
+    setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
+  };
+
+  const openCreateResource = () => {
+    setEditingResource(null);
+    setNewResource({ title: '', description: '', url: '', category: '' });
+    setShowCreateResource(true);
+  };
+
+  const closeResourceForm = () => {
+    setEditingResource(null);
+    setNewResource({ title: '', description: '', url: '', category: '' });
+    setShowCreateResource(false);
+  };
+
+  const openCreateSponsor = () => {
+    setEditingSponsor(null);
+    setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
+    setShowCreateSponsor(true);
+  };
+
+  const closeSponsorForm = () => {
+    setEditingSponsor(null);
+    setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
+    setShowCreateSponsor(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -1405,771 +868,117 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-800">Total Events</h3>
-            <p className="text-3xl font-bold text-blue-600">{events.length}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-800">Total RSVPs</h3>
-            <p className="text-3xl font-bold text-green-600">{rsvps.length}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-800">Resources</h3>
-            <p className="text-3xl font-bold text-purple-600">{resources.length}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-800">Photos</h3>
-            <p className="text-3xl font-bold text-orange-600">{photos.length}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-800">Sponsors</h3>
-            <p className="text-3xl font-bold text-indigo-600">{sponsors.length}</p>
-          </div>
-        </div>
+        <StatsCards 
+          events={events.length}
+          rsvps={rsvps.length}
+          resources={resources.length}
+          photos={photos.length}
+          sponsors={sponsors.length}
+        />
 
         {/* Tab Navigation */}
         <div className="bg-white rounded-lg shadow mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab('events')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'events'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Events ({events.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('rsvps')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'rsvps'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                RSVPs ({rsvps.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('photos')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'photos'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Photos ({photos.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('board')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'board'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Board ({boardMembers.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('resources')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'resources'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Resources ({resources.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('sponsors')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === 'sponsors'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Sponsors ({sponsors.length})
-              </button>
-            </nav>
-          </div>
+          <TabNavigation
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            counts={{
+              events: events.length,
+              rsvps: rsvps.length,
+              photos: photos.length,
+              board: boardMembers.length,
+              resources: resources.length,
+              sponsors: sponsors.length
+            }}
+          />
 
           <div className="p-6">
-            {activeTab === 'events' ? (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">Events</h2>
-                  <button
-                    onClick={handleCreateNewEvent}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
-                  >
-                    Add New Event
-                  </button>
-                </div>
-
-                {/* Edit Event Form */}
-                {editingEvent && (
-                  <EventForm
-                    isEditing={true}
-                    onSubmit={handleUpdateEvent}
-                    onCancel={() => {
-                      setEditingEvent(null);
-                      clearForm();
-                    }}
-                    title={`Edit Event: ${editingEvent.title}`}
-                    formData={newEvent}
-                    onFormChange={handleFormChange}
-                  />
-                )}
-
-                {/* Create Event Form */}
-                {showCreateEvent && (
-                  <EventForm
-                    isEditing={false}
-                    onSubmit={handleCreateEvent}
-                    onCancel={() => {
-                      setShowCreateEvent(false);
-                      clearForm();
-                    }}
-                    title="Create New Event"
-                    formData={newEvent}
-                    onFormChange={handleFormChange}
-                  />
-                )}
-
-                {events.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No events found.</p>
-                ) : (
-                  <div>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Title
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Description
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Date
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Location
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Capacity
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              RSVPs
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {currentEvents.map((event) => (
-                            <tr key={event.id}>
-                              <td className="px-6 py-4">
-                                <div className="text-sm font-medium text-gray-900 max-w-xs whitespace-normal">
-                                  {event.title}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div
-                                  className="text-sm text-gray-500 max-w-lg whitespace-normal max-h-20 overflow-y-auto"
-                                  style={{ maxHeight: '5rem' }}
-                                >
-                                  {event.description || '-'}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {event.date ? new Date(`${event.date}T00:00:00`).toLocaleDateString() : 'TBD'}
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="text-sm text-gray-500 max-w-2xl whitespace-normal">
-                                  {event.location || '-'}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {event.capacity ? `${event.capacity} people` : '-'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                                  {getRSVPCountForEvent(event.id)}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button
-                                  onClick={() => handleEditEvent(event)}
-                                  className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteEvent(event.id, event.title)}
-                                  className="text-red-600 hover:text-red-900 cursor-pointer"
-                                >
-                                  Delete
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                      <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                        <div className="flex-1 flex justify-between sm:hidden">
-                          <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Previous
-                          </button>
-                          <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Next
-                          </button>
-                        </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                          <div>
-                            <p className="text-sm text-gray-700">
-                              Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
-                              <span className="font-medium">{Math.min(endIndex, events.length)}</span> of{' '}
-                              <span className="font-medium">{events.length}</span> results
-                            </p>
-                          </div>
-                          <div>
-                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                              <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                Previous
-                              </button>
-
-                              {/* Page Numbers */}
-                              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                <button
-                                  key={page}
-                                  onClick={() => handlePageChange(page)}
-                                  className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${page === currentPage
-                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                    }`}
-                                >
-                                  {page}
-                                </button>
-                              ))}
-
-                              <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                Next
-                              </button>
-                            </nav>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : activeTab === 'rsvps' ? (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">Recent RSVPs</h2>
-                  <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 cursor-pointer">
-                    Export Data
-                  </button>
-                </div>
-
-                {rsvps.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No RSVPs found.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Name
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Email
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Phone
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Event
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            RSVP Date
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {rsvps.map((rsvp) => (
-                          <tr key={rsvp.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {rsvp.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {rsvp.email}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {rsvp.phone || '-'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {rsvp.events?.title || 'Unknown Event'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(rsvp.created_at).toLocaleDateString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            ) : activeTab === 'photos' ? (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">Photos</h2>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
-                    onClick={() => {
-                      setEditingPhoto(null); // sets isEditing to false in PhotoForm
-                      setNewPhoto({
-                        title: '',
-                        description: '',
-                        event_title: '',
-                        year: '',
-                        taken_at: '',
-                        image_url: '',
-                      });
-                      setShowCreatePhoto(true);
-                    }}>
-                    Add New Photo
-                  </button>
-                </div>
-
-                {(editingPhoto !== null || showCreatePhoto) && (
-                  <PhotoForm
-                    isEditing={!!editingPhoto}
-                    onSubmit={editingPhoto ? handleUpdatePhoto : handleCreatePhoto}
-                    onCancel={() => {
-                      setEditingPhoto(null);
-                      setNewPhoto({
-                        title: '',
-                        description: '',
-                        event_title: '',
-                        year: '',
-                        taken_at: '',
-                        image_url: '',
-                      });
-                      setShowCreatePhoto(false);
-                    }}
-                    formData={newPhoto}
-                    onFormChange={handlePhotoFormChange}
-                  />
-                )}
-
-                <div className="flex justify-end mb-4">
-                  <label className="mr-2 text-sm text-gray-700">Sort by:</label>
-                  <select
-                    value={sortPhotosBy}
-                    onChange={(e) => setSortPhotosBy(e.target.value as "uploaded" | "taken")}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none"
-                  >
-                    <option value="taken">Date Taken</option>
-                    <option value="uploaded">Date Uploaded</option>
-                  </select>
-                </div>
-
-                {photos.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No photos found.</p>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {photos
-                      .slice()
-                      .sort((a, b) => {
-                        const aDate = new Date(String(sortPhotosBy === "taken" ? a.taken_at : a.created_at));
-                        const bDate = new Date(String(sortPhotosBy === "taken" ? b.taken_at : b.created_at));
-                        return bDate.getTime() - aDate.getTime(); // Newest first
-                      })
-                      .map(photo => (
-                        <div key={photo.id} className="bg-white border rounded-lg shadow-sm p-4">
-                          <img
-                            src={photo.image_url}
-                            alt={photo.title}
-                            className="w-full h-48 object-cover rounded mb-2"
-                          />
-                          <h3 className="font-semibold text-gray-800">{photo.title}</h3>
-                          <p className="text-sm text-gray-600 truncate">{photo.description}</p>
-                          <p className="text-xs text-gray-400">
-                            Taken: {photo.taken_at?.split("T")[0]}
-                          </p>
-                          <div className="flex justify-end space-x-2 mt-3">
-                            <button
-                              className="text-blue-600 hover:underline text-sm"
-                              onClick={() => handleEditPhoto(photo)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="text-red-600 hover:underline text-sm"
-                              onClick={() => handleDeletePhoto(photo.id)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </div>
-            ) : activeTab === 'board' ? (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">Board Members</h2>
-                  <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                    onClick={() => {
-                      setShowCreateBoardMember(true);
-                      setEditingBoardMember(null);
-                      setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
-                    }}
-                  >
-                    Add New Member
-                  </button>
-                </div>
-                {(editingBoardMember || showCreateBoardMember) && (
-                  <BoardMemberForm
-                    isEditing={!!editingBoardMember}
-                    formData={newBoardMember}
-                    onFormChange={handleBoardFormChange}
-                    onSubmit={editingBoardMember ? handleUpdateBoardMember : handleCreateBoardMember}
-                    onCancel={() => {
-                      setShowCreateBoardMember(false);
-                      setEditingBoardMember(null);
-                      setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
-                    }}
-                  //title={editingBoardMember ? `Edit: ${editingBoardMember.name}` : 'Create New Board Member'} //This line didn't work, i think it is unnecesary -Will
-                  />
-                )}
-
-                {boardMembers.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No board members found.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                          {/*<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>*/}
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {boardMembers.map(member => (
-                          <tr key={member.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.role}</td>
-                            {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.order_index}</td>*/}
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.email}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                              <button
-                                onClick={() => handleEditBoardMember(member)}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteBoardMember(member.id, member.name)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-            ) : activeTab === 'resources' ? (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">Resources</h2>
-                  <button
-                    onClick={() => {
-                      setEditingResource(null);
-                      setNewResource({ title: '', description: '', url: '', category: '' });
-                      setShowCreateResource(true);
-                    }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
-                  >
-                    Add New Resource
-                  </button>
-                </div>
-
-                {/* Edit Resource Form */}
-                {editingResource && (
-                  <ResourceForm
-                    isEditing={true}
-                    onSubmit={handleUpdateResource}
-                    onCancel={() => {
-                      setEditingResource(null);
-                      setNewResource({ title: '', description: '', url: '', category: '' });
-                    }}
-                    title={`Edit Resource: ${editingResource.title}`}
-                    formData={newResource}
-                    onFormChange={handleResourceFormChange}
-                  />
-                )}
-
-                {/* Create Resource Form */}
-                {showCreateResource && (
-                  <ResourceForm
-                    isEditing={false}
-                    onSubmit={handleCreateResource}
-                    onCancel={() => {
-                      setShowCreateResource(false);
-                      setNewResource({ title: '', description: '', url: '', category: '' });
-                    }}
-                    title="Create New Resource"
-                    formData={newResource}
-                    onFormChange={handleResourceFormChange}
-                  />
-                )}
-
-                {resources.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No resources found.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Title
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Description
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Category
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            URL
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {resources.map((resource) => (
-                          <tr key={resource.id}>
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-medium text-gray-900 max-w-xs whitespace-normal">
-                                {resource.title}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div
-                                className="text-sm text-gray-500 max-w-lg whitespace-normal max-h-20 overflow-y-auto"
-                                style={{ maxHeight: '5rem' }}
-                              >
-                                {resource.description || '-'}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {resource.category || '-'}
-                            </td>
-                            <td className="px-6 py-4">
-                              <a
-                                href={resource.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-900 text-sm max-w-xs truncate block"
-                              >
-                                {resource.url}
-                              </a>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <button
-                                onClick={() => handleEditResource(resource)}
-                                className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteResource(resource.id, resource.title)}
-                                className="text-red-600 hover:text-red-900 cursor-pointer"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            ) : activeTab === 'sponsors' ? (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">Sponsors</h2>
-                  <button
-                    onClick={() => {
-                      setEditingSponsor(null);
-                      setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
-                      setShowCreateSponsor(true);
-                    }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
-                  >
-                    Add New Sponsor
-                  </button>
-                </div>
-
-                {/* Edit Sponsor Form */}
-                {editingSponsor && (
-                  <SponsorForm
-                    isEditing={true}
-                    onSubmit={handleUpdateSponsor}
-                    onCancel={() => {
-                      setEditingSponsor(null);
-                      setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
-                    }}
-                    title={`Edit Sponsor: ${editingSponsor.name}`}
-                    formData={newSponsor}
-                    onFormChange={handleSponsorFormChange}
-                  />
-                )}
-
-                {/* Create Sponsor Form */}
-                {showCreateSponsor && (
-                  <SponsorForm
-                    isEditing={false}
-                    onSubmit={handleCreateSponsor}
-                    onCancel={() => {
-                      setShowCreateSponsor(false);
-                      setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
-                    }}
-                    title="Create New Sponsor"
-                    formData={newSponsor}
-                    onFormChange={handleSponsorFormChange}
-                  />
-                )}
-
-                {sponsors.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No sponsors found.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Logo
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Name
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Description
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Website
-                          </th>
-                          {/*<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Order
-                          </th>*/}
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {sponsors.map((sponsor) => (
-                          <tr key={sponsor.id}>
-                            <td className="px-6 py-4">
-                              {sponsor.logo_url ? (
-                                <img
-                                  src={sponsor.logo_url}
-                                  alt={sponsor.name}
-                                  className="w-16 h-16 object-contain"
-                                />
-                              ) : (
-                                <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
-                                  No Logo
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {sponsor.name}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div
-                                className="text-sm text-gray-500 max-w-lg whitespace-normal max-h-20 overflow-y-auto"
-                                style={{ maxHeight: '5rem' }}
-                              >
-                                {sponsor.description || '-'}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              {sponsor.website ? (
-                                <a
-                                  href={sponsor.website}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-900 text-sm max-w-xs truncate block"
-                                >
-                                  {sponsor.website}
-                                </a>
-                              ) : (
-                                '-'
-                              )}
-                            </td>
-                            {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {sponsor.order_index || '-'}
-                            </td>*/}
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <button
-                                onClick={() => handleEditSponsor(sponsor)}
-                                className="text-blue-600 hover:text-blue-900 mr-3 cursor-pointer"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteSponsor(sponsor.id, sponsor.name)}
-                                className="text-red-600 hover:text-red-900 cursor-pointer"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            ) : null}
+            {activeTab === 'events' && (
+              <EventsTab
+                events={events}
+                editingEvent={editingEvent}
+                showCreateEvent={showCreateEvent}
+                newEvent={newEvent}
+                currentEvents={currentEvents}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                getRSVPCountForEvent={getRSVPCountForEvent}
+                handleCreateNewEvent={handleCreateNewEvent}
+                handleUpdateEvent={handleUpdateEvent}
+                handleCreateEvent={handleCreateEvent}
+                handleFormChange={handleFormChange}
+                handleEditEvent={handleEditEvent}
+                handleDeleteEvent={handleDeleteEvent}
+                handlePageChange={handlePageChange}
+                clearForm={clearForm}
+              />
+            )}
+            {activeTab === 'rsvps' && (
+              <RSVPsTab rsvps={rsvps} />
+            )}
+            {activeTab === 'photos' && (
+              <PhotosTab
+                photos={photos}
+                editingPhoto={editingPhoto}
+                showCreatePhoto={showCreatePhoto}
+                newPhoto={newPhoto}
+                sortPhotosBy={sortPhotosBy}
+                handlePhotoFormChange={handlePhotoFormChange}
+                handleUpdatePhoto={handleUpdatePhoto}
+                handleCreatePhoto={handleCreatePhoto}
+                handleEditPhoto={handleEditPhoto}
+                handleDeletePhoto={handleDeletePhoto}
+                setSortPhotosBy={setSortPhotosBy}
+                openCreatePhoto={openCreatePhoto}
+                closePhotoForm={closePhotoForm}
+              />
+            )}
+            {activeTab === 'board' && (
+              <BoardTab
+                boardMembers={boardMembers}
+                editingBoardMember={editingBoardMember}
+                showCreateBoardMember={showCreateBoardMember}
+                newBoardMember={newBoardMember}
+                handleBoardFormChange={handleBoardFormChange}
+                handleUpdateBoardMember={handleUpdateBoardMember}
+                handleCreateBoardMember={handleCreateBoardMember}
+                handleEditBoardMember={handleEditBoardMember}
+                handleDeleteBoardMember={handleDeleteBoardMember}
+                openCreateBoardMember={openCreateBoardMember}
+                closeBoardMemberForm={closeBoardMemberForm}
+              />
+            )}
+            {activeTab === 'resources' && (
+              <ResourcesTab
+                resources={resources}
+                editingResource={editingResource}
+                showCreateResource={showCreateResource}
+                newResource={newResource}
+                handleResourceFormChange={handleResourceFormChange}
+                handleUpdateResource={handleUpdateResource}
+                handleCreateResource={handleCreateResource}
+                handleEditResource={handleEditResource}
+                handleDeleteResource={handleDeleteResource}
+                openCreateResource={openCreateResource}
+                closeResourceForm={closeResourceForm}
+              />
+            )}
+            {activeTab === 'sponsors' && (
+              <SponsorsTab
+                sponsors={sponsors}
+                editingSponsor={editingSponsor}
+                showCreateSponsor={showCreateSponsor}
+                newSponsor={newSponsor}
+                handleSponsorFormChange={handleSponsorFormChange}
+                handleUpdateSponsor={handleUpdateSponsor}
+                handleCreateSponsor={handleCreateSponsor}
+                handleEditSponsor={handleEditSponsor}
+                handleDeleteSponsor={handleDeleteSponsor}
+                openCreateSponsor={openCreateSponsor}
+                closeSponsorForm={closeSponsorForm}
+              />
+            )}
             {isRoot && (
               <div>
                 <RootManageUsersPanel />

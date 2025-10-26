@@ -55,7 +55,7 @@ export default function ImageUploader({ folder, value, onUpload, label }: ImageU
     return (
         <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
-                {label || "Image Upload"}
+                {label}
             </label>
 
             <div>
