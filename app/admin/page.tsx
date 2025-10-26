@@ -43,7 +43,8 @@ type BoardMember = {
   id: string;
   name: string;
   role: string;
-  order_index: number | null;
+  //order_index: number | null;
+  email: string;
 };
 
 type Resource = {
@@ -317,6 +318,7 @@ const BoardMemberForm = ({
     name: string;
     role: string;
     order_index: string;
+    email: string;
   };
   onFormChange: (field: string, value: string) => void;
 }) => (
@@ -348,6 +350,7 @@ const BoardMemberForm = ({
             placeholder="President, Treasurer, etc."
           />
         </div>
+        {/*
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
           <input
@@ -356,6 +359,17 @@ const BoardMemberForm = ({
             onChange={(e) => onFormChange("order_index", e.target.value)}
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
             placeholder="0, 1, 2..."
+          />
+        </div>
+        */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+          <input
+            type="text"
+            value={formData.email}
+            onChange={(e) => onFormChange("email", e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-100"
+            placeholder="SomeAddress@email.com"
           />
         </div>
       </div>
@@ -538,6 +552,7 @@ const SponsorForm = ({
             placeholder="https://example.com"
           />
         </div>
+        {/*
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Display Order
@@ -551,6 +566,7 @@ const SponsorForm = ({
             min="1"
           />
         </div>
+        */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Description
@@ -621,6 +637,7 @@ export default function AdminPage() {
     name: '',
     role: '',
     order_index: '',
+    email: '',
   });
   const [newResource, setNewResource] = useState({
     title: '',
@@ -983,15 +1000,17 @@ export default function AdminPage() {
       name: newBoardMember.name,
       role: newBoardMember.role,
       order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null,
+      email: newBoardMember.email
     }]);
 
     if (error) {
       alert("Error creating board member.");
       console.error(error);
     } else {
-      setNewBoardMember({ name: '', role: '', order_index: '' });
+      setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
       setShowCreateBoardMember(false);
       fetchData();
+      alert("Board member created successfully!");
     }
   };
 
@@ -1001,7 +1020,8 @@ export default function AdminPage() {
     setNewBoardMember({
       name: member.name,
       role: member.role,
-      order_index: member.order_index?.toString() || ''
+      order_index: member.order_index?.toString() || '',
+      email: member.email
     });
   };
 
@@ -1014,7 +1034,8 @@ export default function AdminPage() {
       .update({
         name: newBoardMember.name,
         role: newBoardMember.role,
-        order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null
+        order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null,
+        email: newBoardMember.email
       })
       .eq('id', editingBoardMember.id);
 
@@ -1023,8 +1044,9 @@ export default function AdminPage() {
       console.error(error);
     } else {
       setEditingBoardMember(null);
-      setNewBoardMember({ name: '', role: '', order_index: '' });
+      setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
       fetchData();
+      alert("Board member updated successfully!");
     }
   };
 
@@ -1736,7 +1758,7 @@ export default function AdminPage() {
                     onClick={() => {
                       setShowCreateBoardMember(true);
                       setEditingBoardMember(null);
-                      setNewBoardMember({ name: '', role: '', order_index: '' });
+                      setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
                     }}
                   >
                     Add New Member
@@ -1751,7 +1773,7 @@ export default function AdminPage() {
                     onCancel={() => {
                       setShowCreateBoardMember(false);
                       setEditingBoardMember(null);
-                      setNewBoardMember({ name: '', role: '', order_index: '' });
+                      setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
                     }}
                   //title={editingBoardMember ? `Edit: ${editingBoardMember.name}` : 'Create New Board Member'} //This line didn't work, i think it is unnecesary -Will
                   />
@@ -1766,7 +1788,8 @@ export default function AdminPage() {
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                          {/*<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>*/}
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                           <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
@@ -1775,7 +1798,8 @@ export default function AdminPage() {
                           <tr key={member.id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.name}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.role}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.order_index}</td>
+                            {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.order_index}</td>*/}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.email}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                               <button
                                 onClick={() => handleEditBoardMember(member)}
@@ -1983,9 +2007,9 @@ export default function AdminPage() {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Website
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {/*<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Order
-                          </th>
+                          </th>*/}
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
                           </th>
@@ -2034,9 +2058,9 @@ export default function AdminPage() {
                                 '-'
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {sponsor.order_index || '-'}
-                            </td>
+                            </td>*/}
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               <button
                                 onClick={() => handleEditSponsor(sponsor)}
