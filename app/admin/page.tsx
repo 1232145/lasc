@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import ImageUploader from "@/components/ImageUploader";
+import { useToast } from "@/contexts/ToastContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 
 import RootManageUsersPanel from 'components/RootManageUsersPanel';
 
@@ -603,6 +605,8 @@ const SponsorForm = ({
 );
 
 export default function AdminPage() {
+  const { showSuccess, showError } = useToast();
+  const { confirm } = useConfirmation();
   const [events, setEvents] = useState<Event[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [rsvps, setRsvps] = useState<RSVP[]>([]);
@@ -817,7 +821,7 @@ export default function AdminPage() {
     e.preventDefault();
 
     if (!newEvent.title || !newEvent.date) {
-      alert('Please fill in title and date');
+      showError('Validation Error', 'Please fill in title and date');
       return;
     }
 
@@ -835,7 +839,7 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error creating event:', error);
-        alert('Error creating event');
+        showError('Error', 'Failed to create event. Please try again.');
         return;
       }
 
@@ -843,10 +847,10 @@ export default function AdminPage() {
       setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
       setShowCreateEvent(false);
       fetchData();
-      alert('Event created successfully!');
+      showSuccess('Success', 'Event created successfully!');
     } catch (err) {
       console.error('Error creating event:', err);
-      alert('Error creating event');
+      showError('Error', 'Failed to create event. Please try again.');
     }
   };
 
@@ -867,7 +871,7 @@ export default function AdminPage() {
     e.preventDefault();
 
     if (!editingEvent || !newEvent.title || !newEvent.date) {
-      alert('Please fill in title and date');
+      showError('Validation Error', 'Please fill in title and date');
       return;
     }
 
@@ -886,7 +890,7 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error updating event:', error);
-        alert('Error updating event');
+        showError('Error', 'Failed to update event. Please try again.');
         return;
       }
 
@@ -894,17 +898,23 @@ export default function AdminPage() {
       setEditingEvent(null);
       setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
       fetchData();
-      alert('Event updated successfully!');
+      showSuccess('Success', 'Event updated successfully!');
     } catch (err) {
       console.error('Error updating event:', err);
-      alert('Error updating event');
+      showError('Error', 'Failed to update event. Please try again.');
     }
   };
 
   const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
-    if (!confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete Event',
+      message: `Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`,
+      confirmText: 'Delete Event',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (!confirmed) return;
 
     try {
       const { error } = await supabase
@@ -914,15 +924,15 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error deleting event:', error);
-        alert('Error deleting event');
+        showError('Error', 'Failed to delete event. Please try again.');
         return;
       }
 
       fetchData();
-      alert('Event deleted successfully!');
+      showSuccess('Success', 'Event deleted successfully!');
     } catch (err) {
       console.error('Error deleting event:', err);
-      alert('Error deleting event');
+      showError('Error', 'Failed to delete event. Please try again.');
     }
   };
 
@@ -932,15 +942,25 @@ export default function AdminPage() {
 
   const handleCreatePhoto = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from('photos').insert([{
-      ...newPhoto,
-      year: newPhoto.year ? parseInt(newPhoto.year) : null,
-      taken_at: newPhoto.taken_at || null
-    }]);
-    if (!error) {
+    try {
+      const { error } = await supabase.from('photos').insert([{
+        ...newPhoto,
+        year: newPhoto.year ? parseInt(newPhoto.year) : null,
+        taken_at: newPhoto.taken_at || null
+      }]);
+      
+      if (error) {
+        console.error('Error creating photo:', error);
+        showError('Error', 'Failed to add photo. Please try again.');
+        return;
+      }
+      
       setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
       fetchData();
-      alert('Photo added successfully!');
+      showSuccess('Success', 'Photo added successfully!');
+    } catch (err) {
+      console.error('Error creating photo:', err);
+      showError('Error', 'Failed to add photo. Please try again.');
     }
   };
 
@@ -959,29 +979,57 @@ export default function AdminPage() {
   const handleUpdatePhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPhoto) return;
-    const { error } = await supabase
-      .from('photos')
-      .update({
-        ...newPhoto,
-        year: newPhoto.year ? parseInt(newPhoto.year) : null,
-        taken_at: newPhoto.taken_at || null
-      })
-      .eq('id', editingPhoto.id);
+    
+    try {
+      const { error } = await supabase
+        .from('photos')
+        .update({
+          ...newPhoto,
+          year: newPhoto.year ? parseInt(newPhoto.year) : null,
+          taken_at: newPhoto.taken_at || null
+        })
+        .eq('id', editingPhoto.id);
 
-    if (!error) {
+      if (error) {
+        console.error('Error updating photo:', error);
+        showError('Error', 'Failed to update photo. Please try again.');
+        return;
+      }
+
       setEditingPhoto(null);
       setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
       fetchData();
-      alert('Photo updated successfully!');
+      showSuccess('Success', 'Photo updated successfully!');
+    } catch (err) {
+      console.error('Error updating photo:', err);
+      showError('Error', 'Failed to update photo. Please try again.');
     }
   };
 
   const handleDeletePhoto = async (photoId: string) => {
-    if (!confirm('Are you sure you want to delete this photo?')) return;
-    const { error } = await supabase.from('photos').delete().eq('id', photoId);
-    if (!error) {
+    const confirmed = await confirm({
+      title: 'Delete Photo',
+      message: 'Are you sure you want to delete this photo? This action cannot be undone.',
+      confirmText: 'Delete Photo',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (!confirmed) return;
+    
+    try {
+      const { error } = await supabase.from('photos').delete().eq('id', photoId);
+      if (error) {
+        console.error('Error deleting photo:', error);
+        showError('Error', 'Failed to delete photo. Please try again.');
+        return;
+      }
+      
       fetchData();
-      alert('Photo deleted successfully!');
+      showSuccess('Success', 'Photo deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting photo:', err);
+      showError('Error', 'Failed to delete photo. Please try again.');
     }
   };
 
@@ -992,25 +1040,31 @@ export default function AdminPage() {
   const handleCreateBoardMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBoardMember.name || !newBoardMember.role) {
-      alert("Name and role are required.");
+      showError('Validation Error', 'Name and role are required.');
       return;
     }
 
-    const { error } = await supabase.from('board_members').insert([{
-      name: newBoardMember.name,
-      role: newBoardMember.role,
-      order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null,
-      email: newBoardMember.email
-    }]);
+    try {
+      const { error } = await supabase.from('board_members').insert([{
+        name: newBoardMember.name,
+        role: newBoardMember.role,
+        order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null,
+        email: newBoardMember.email
+      }]);
 
-    if (error) {
-      alert("Error creating board member.");
-      console.error(error);
-    } else {
+      if (error) {
+        console.error('Error creating board member:', error);
+        showError('Error', 'Failed to create board member. Please try again.');
+        return;
+      }
+
       setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
       setShowCreateBoardMember(false);
       fetchData();
-      alert("Board member created successfully!");
+      showSuccess('Success', 'Board member created successfully!');
+    } catch (err) {
+      console.error('Error creating board member:', err);
+      showError('Error', 'Failed to create board member. Please try again.');
     }
   };
 
@@ -1029,36 +1083,57 @@ export default function AdminPage() {
     e.preventDefault();
     if (!editingBoardMember) return;
 
-    const { error } = await supabase
-      .from('board_members')
-      .update({
-        name: newBoardMember.name,
-        role: newBoardMember.role,
-        order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null,
-        email: newBoardMember.email
-      })
-      .eq('id', editingBoardMember.id);
+    try {
+      const { error } = await supabase
+        .from('board_members')
+        .update({
+          name: newBoardMember.name,
+          role: newBoardMember.role,
+          order_index: newBoardMember.order_index ? parseInt(newBoardMember.order_index) : null,
+          email: newBoardMember.email
+        })
+        .eq('id', editingBoardMember.id);
 
-    if (error) {
-      alert("Error updating board member.");
-      console.error(error);
-    } else {
+      if (error) {
+        console.error('Error updating board member:', error);
+        showError('Error', 'Failed to update board member. Please try again.');
+        return;
+      }
+
       setEditingBoardMember(null);
       setNewBoardMember({ name: '', role: '', order_index: '', email: '' });
       fetchData();
-      alert("Board member updated successfully!");
+      showSuccess('Success', 'Board member updated successfully!');
+    } catch (err) {
+      console.error('Error updating board member:', err);
+      showError('Error', 'Failed to update board member. Please try again.');
     }
   };
 
   const handleDeleteBoardMember = async (id: string, name: string) => {
-    if (!confirm(`Delete board member "${name}"?`)) return;
+    const confirmed = await confirm({
+      title: 'Delete Board Member',
+      message: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+      confirmText: 'Delete Member',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
 
-    const { error } = await supabase.from('board_members').delete().eq('id', id);
-    if (error) {
-      alert("Error deleting board member.");
-      console.error(error);
-    } else {
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase.from('board_members').delete().eq('id', id);
+      if (error) {
+        console.error('Error deleting board member:', error);
+        showError('Error', 'Failed to delete board member. Please try again.');
+        return;
+      }
+      
       fetchData();
+      showSuccess('Success', 'Board member deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting board member:', err);
+      showError('Error', 'Failed to delete board member. Please try again.');
     }
   };
 
@@ -1070,7 +1145,7 @@ export default function AdminPage() {
   const handleCreateResource = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newResource.title || !newResource.url) {
-      alert('Please fill in title and URL');
+      showError('Validation Error', 'Please fill in title and URL');
       return;
     }
 
@@ -1086,17 +1161,17 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error creating resource:', error);
-        alert('Error creating resource');
+        showError('Error', 'Failed to create resource. Please try again.');
         return;
       }
 
       setNewResource({ title: '', description: '', url: '', category: '' });
       setShowCreateResource(false);
       fetchData();
-      alert('Resource created successfully!');
+      showSuccess('Success', 'Resource created successfully!');
     } catch (err) {
       console.error('Error creating resource:', err);
-      alert('Error creating resource');
+      showError('Error', 'Failed to create resource. Please try again.');
     }
   };
 
@@ -1114,7 +1189,7 @@ export default function AdminPage() {
   const handleUpdateResource = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingResource || !newResource.title || !newResource.url) {
-      alert('Please fill in title and URL');
+      showError('Validation Error', 'Please fill in title and URL');
       return;
     }
 
@@ -1131,24 +1206,30 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error updating resource:', error);
-        alert('Error updating resource');
+        showError('Error', 'Failed to update resource. Please try again.');
         return;
       }
 
       setEditingResource(null);
       setNewResource({ title: '', description: '', url: '', category: '' });
       fetchData();
-      alert('Resource updated successfully!');
+      showSuccess('Success', 'Resource updated successfully!');
     } catch (err) {
       console.error('Error updating resource:', err);
-      alert('Error updating resource');
+      showError('Error', 'Failed to update resource. Please try again.');
     }
   };
 
   const handleDeleteResource = async (resourceId: string, resourceTitle: string) => {
-    if (!confirm(`Are you sure you want to delete "${resourceTitle}"? This action cannot be undone.`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete Resource',
+      message: `Are you sure you want to delete "${resourceTitle}"? This action cannot be undone.`,
+      confirmText: 'Delete Resource',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (!confirmed) return;
 
     try {
       const { error } = await supabase
@@ -1158,15 +1239,15 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error deleting resource:', error);
-        alert('Error deleting resource');
+        showError('Error', 'Failed to delete resource. Please try again.');
         return;
       }
 
       fetchData();
-      alert('Resource deleted successfully!');
+      showSuccess('Success', 'Resource deleted successfully!');
     } catch (err) {
       console.error('Error deleting resource:', err);
-      alert('Error deleting resource');
+      showError('Error', 'Failed to delete resource. Please try again.');
     }
   };
 
@@ -1178,7 +1259,7 @@ export default function AdminPage() {
   const handleCreateSponsor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSponsor.name) {
-      alert('Please fill in sponsor name');
+      showError('Validation Error', 'Please fill in sponsor name');
       return;
     }
 
@@ -1195,17 +1276,17 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error creating sponsor:', error);
-        alert('Error creating sponsor');
+        showError('Error', 'Failed to create sponsor. Please try again.');
         return;
       }
 
       setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
       setShowCreateSponsor(false);
       fetchData();
-      alert('Sponsor created successfully!');
+      showSuccess('Success', 'Sponsor created successfully!');
     } catch (err) {
       console.error('Error creating sponsor:', err);
-      alert('Error creating sponsor');
+      showError('Error', 'Failed to create sponsor. Please try again.');
     }
   };
 
@@ -1224,7 +1305,7 @@ export default function AdminPage() {
   const handleUpdateSponsor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingSponsor || !newSponsor.name) {
-      alert('Please fill in sponsor name');
+      showError('Validation Error', 'Please fill in sponsor name');
       return;
     }
 
@@ -1242,24 +1323,30 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error updating sponsor:', error);
-        alert('Error updating sponsor');
+        showError('Error', 'Failed to update sponsor. Please try again.');
         return;
       }
 
       setEditingSponsor(null);
       setNewSponsor({ name: '', logo_url: '', description: '', website: '', order_index: '' });
       fetchData();
-      alert('Sponsor updated successfully!');
+      showSuccess('Success', 'Sponsor updated successfully!');
     } catch (err) {
       console.error('Error updating sponsor:', err);
-      alert('Error updating sponsor');
+      showError('Error', 'Failed to update sponsor. Please try again.');
     }
   };
 
   const handleDeleteSponsor = async (sponsorId: string, sponsorName: string) => {
-    if (!confirm(`Are you sure you want to delete "${sponsorName}"? This action cannot be undone.`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete Sponsor',
+      message: `Are you sure you want to delete "${sponsorName}"? This action cannot be undone.`,
+      confirmText: 'Delete Sponsor',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (!confirmed) return;
 
     try {
       const { error } = await supabase
@@ -1269,15 +1356,15 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Error deleting sponsor:', error);
-        alert('Error deleting sponsor');
+        showError('Error', 'Failed to delete sponsor. Please try again.');
         return;
       }
 
       fetchData();
-      alert('Sponsor deleted successfully!');
+      showSuccess('Success', 'Sponsor deleted successfully!');
     } catch (err) {
       console.error('Error deleting sponsor:', err);
-      alert('Error deleting sponsor');
+      showError('Error', 'Failed to delete sponsor. Please try again.');
     }
   };
 
