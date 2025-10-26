@@ -70,6 +70,7 @@ export default async function AboutSection() {
                 <div key={member.id}>
                   <p className="font-semibold">{member.name}</p>
                   <p className="text-sm text-gray-600">{member.role}</p>
+                  <p className="text-sm text-gray-600">{member.email}</p>
                 </div>
               ))}
             </div>

@@ -58,12 +58,6 @@ export default async function SponsorshipSection() {
                   {sponsor.name}
                 </h3>
 
-                {sponsor.tier && (
-                  <p className="text-sm text-blue-600 font-medium mb-2">
-                    {sponsor.tier}
-                  </p>
-                )}
-
                 {sponsor.description && (
                   <p className="text-sm text-gray-600 mb-3 line-clamp-3">
                     {sponsor.description}
