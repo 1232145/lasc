@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import heic2any from "heic2any";
 
 interface ImageUploaderProps {
     folder: "events" | "sponsors" | "gallery"; // limits to your three folders
@@ -14,37 +15,49 @@ export default function ImageUploader({ folder, value, onUpload, label }: ImageU
     const [uploading, setUploading] = useState(false);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    let file = e.target.files?.[0];
+    if (!file) return;
 
-        try {
-            setUploading(true);
+    try {
+        setUploading(true);
 
-            const ext = file.name.split(".").pop();
-            const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
-            const filePath = `${folder}/${uniqueName}`;
+        // ✅ Auto-convert HEIC → JPEG
+        if (file.type === "image/heic" || file.name.toLowerCase().endsWith(".heic")) {
+            const convertedBlob = await heic2any({
+                blob: file,
+                toType: "image/jpeg",
+                quality: 0.9,
+            });
 
-            // Upload to Supabase
-            const { error } = await supabase.storage
-                .from("site-images")
-                .upload(filePath, file, {
-                    contentType: file.type,
-                    upsert: false
-                });
-
-            if (error) throw error;
-
-            // Get public URL
-            const { data } = supabase.storage.from("site-images").getPublicUrl(filePath);
-
-            onUpload(data.publicUrl);
-        } catch (err) {
-            console.error("Error uploading image:", err);
-            alert("Upload failed. Please try again.");
-        } finally {
-            setUploading(false);
+            file = new File([convertedBlob as Blob], file.name.replace(/\.heic$/i, ".jpg"), {
+                type: "image/jpeg",
+            });
         }
-    };
+
+        const ext = file.name.split(".").pop();
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
+        const filePath = `${folder}/${uniqueName}`;
+
+        // Upload to Supabase
+        const { error } = await supabase.storage
+            .from("site-images")
+            .upload(filePath, file, {
+                contentType: file.type,
+                upsert: false,
+            });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data } = supabase.storage.from("site-images").getPublicUrl(filePath);
+        onUpload(data.publicUrl);
+    } catch (err) {
+        console.error("Error uploading image:", err);
+        alert("Upload failed. Please try again.");
+    } finally {
+        setUploading(false);
+    }
+};
 
     const handleRemove = () => {
         if (confirm("Remove this image?")) {
