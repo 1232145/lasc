@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import heic2any from "heic2any";
 
 interface ImageUploaderProps {
     folder: "events" | "sponsors" | "gallery"; // limits to your three folders
@@ -23,6 +22,7 @@ export default function ImageUploader({ folder, value, onUpload, label }: ImageU
 
         // ✅ Auto-convert HEIC → JPEG
         if (file.type === "image/heic" || file.name.toLowerCase().endsWith(".heic")) {
+            const heic2any = (await import("heic2any")).default;
             const convertedBlob = await heic2any({
                 blob: file,
                 toType: "image/jpeg",
