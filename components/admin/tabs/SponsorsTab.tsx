@@ -3,6 +3,7 @@ import { SponsorForm } from '../forms/SponsorForm';
 import { EmptyState } from '../ui/EmptyState';
 import type { Sponsor } from '../types';
 import { SortableHeader } from '../ui/SortableHeader';
+import { SearchInput } from '../ui/SearchInput';
 
 interface SponsorsTabProps {
   sponsors: Sponsor[];
@@ -33,10 +34,21 @@ export const SponsorsTab: React.FC<SponsorsTabProps> = ({
 }) => {
   type SortKey = 'name' | 'description' | 'website';
   const [sort, setSort] = useState<{ key: SortKey | null; direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+  const [query, setQuery] = useState('');
+
+  const filteredSponsors = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sponsors;
+    return sponsors.filter((s) =>
+      (s.name || '').toLowerCase().includes(q) ||
+      (s.description || '').toLowerCase().includes(q) ||
+      (s.website || '').toLowerCase().includes(q)
+    );
+  }, [sponsors, query]);
 
   const sortedSponsors = useMemo(() => {
-    if (!sort.key || !sort.direction) return sponsors;
-    const arr = [...sponsors];
+    if (!sort.key || !sort.direction) return filteredSponsors;
+    const arr = [...filteredSponsors];
     const dir = sort.direction === 'asc' ? 1 : -1;
     arr.sort((a, b) => {
       switch (sort.key) {
@@ -51,12 +63,14 @@ export const SponsorsTab: React.FC<SponsorsTabProps> = ({
       }
     });
     return arr;
-  }, [sponsors, sort]);
+  }, [filteredSponsors, sort]);
 
   return (
   <div>
-    <div className="flex justify-between items-center mb-6">
+    <div className="flex justify-between items-center mb-6 gap-3">
       <h2 className="text-xl font-semibold text-gray-800">Sponsors</h2>
+      <div className="flex-1 hidden md:block" />
+      <SearchInput value={query} onChange={setQuery} placeholder="Search sponsors..." />
       <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer" onClick={openCreateSponsor}>
         Add New Sponsor
       </button>

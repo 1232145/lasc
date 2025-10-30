@@ -3,6 +3,7 @@ import { BoardMemberForm } from '../forms/BoardMemberForm';
 import { EmptyState } from '../ui/EmptyState';
 import type { BoardMember } from '../types';
 import { SortableHeader } from '../ui/SortableHeader';
+import { SearchInput } from '../ui/SearchInput';
 
 interface BoardTabProps {
   boardMembers: BoardMember[];
@@ -33,10 +34,21 @@ export const BoardTab: React.FC<BoardTabProps> = ({
 }) => {
   type SortKey = 'name' | 'role' | 'email';
   const [sort, setSort] = useState<{ key: SortKey | null; direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+  const [query, setQuery] = useState('');
+
+  const filteredMembers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return boardMembers;
+    return boardMembers.filter((m) =>
+      (m.name || '').toLowerCase().includes(q) ||
+      (m.role || '').toLowerCase().includes(q) ||
+      (m.email || '').toLowerCase().includes(q)
+    );
+  }, [boardMembers, query]);
 
   const sortedMembers = useMemo(() => {
-    if (!sort.key || !sort.direction) return boardMembers;
-    const arr = [...boardMembers];
+    if (!sort.key || !sort.direction) return filteredMembers;
+    const arr = [...filteredMembers];
     const dir = sort.direction === 'asc' ? 1 : -1;
     arr.sort((a, b) => {
       switch (sort.key) {
@@ -51,12 +63,14 @@ export const BoardTab: React.FC<BoardTabProps> = ({
       }
     });
     return arr;
-  }, [boardMembers, sort]);
+  }, [filteredMembers, sort]);
 
   return (
   <div>
-    <div className="flex justify-between items-center mb-6">
+    <div className="flex justify-between items-center mb-6 gap-3">
       <h2 className="text-xl font-semibold text-gray-800">Board Members</h2>
+      <div className="flex-1 hidden md:block" />
+      <SearchInput value={query} onChange={setQuery} placeholder="Search members..." />
       <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700" onClick={openCreateBoardMember}>
         Add New Member
       </button>

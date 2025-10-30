@@ -4,6 +4,7 @@ import { Pagination } from '../ui/Pagination';
 import { EmptyState } from '../ui/EmptyState';
 import type { Event } from '../types';
 import { SortableHeader } from '../ui/SortableHeader';
+import { SearchInput } from '../ui/SearchInput';
 
 interface EventsTabProps {
   events: Event[];
@@ -48,10 +49,28 @@ export const EventsTab: React.FC<EventsTabProps> = ({
 }) => {
   type SortKey = 'title' | 'description' | 'date' | 'location' | 'capacity' | 'rsvps';
   const [sort, setSort] = useState<{ key: SortKey | null; direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+  const [query, setQuery] = useState('');
+
+  const filteredCurrent = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return currentEvents;
+    return currentEvents.filter((e) => {
+      const title = (e.title || '').toLowerCase();
+      const description = (e.description || '').toLowerCase();
+      const location = (e.location || '').toLowerCase();
+      const date = e.date ? new Date(`${e.date}T00:00:00`).toLocaleDateString().toLowerCase() : '';
+      return (
+        title.includes(q) ||
+        description.includes(q) ||
+        location.includes(q) ||
+        date.includes(q)
+      );
+    });
+  }, [currentEvents, query]);
 
   const sortedCurrent = useMemo(() => {
-    if (!sort.key || !sort.direction) return currentEvents;
-    const arr = [...currentEvents];
+    if (!sort.key || !sort.direction) return filteredCurrent;
+    const arr = [...filteredCurrent];
     arr.sort((a, b) => {
       const dir = sort.direction === 'asc' ? 1 : -1;
       switch (sort.key) {
@@ -75,12 +94,14 @@ export const EventsTab: React.FC<EventsTabProps> = ({
       }
     });
     return arr;
-  }, [currentEvents, sort, getRSVPCountForEvent]);
+  }, [filteredCurrent, sort, getRSVPCountForEvent]);
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="flex justify-between items-center mb-6 gap-3">
         <h2 className="text-xl font-semibold text-gray-800">Events</h2>
+      <div className="flex-1 hidden md:block" />
+      <SearchInput value={query} onChange={setQuery} placeholder="Search events..." />
         <button
           onClick={handleCreateNewEvent}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"

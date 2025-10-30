@@ -3,6 +3,7 @@ import { ResourceForm } from '../forms/ResourceForm';
 import { EmptyState } from '../ui/EmptyState';
 import type { Resource } from '../types';
 import { SortableHeader } from '../ui/SortableHeader';
+import { SearchInput } from '../ui/SearchInput';
 
 interface ResourcesTabProps {
   resources: Resource[];
@@ -33,10 +34,22 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({
 }) => {
   type SortKey = 'title' | 'description' | 'category' | 'url';
   const [sort, setSort] = useState<{ key: SortKey | null; direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+  const [query, setQuery] = useState('');
+
+  const filteredResources = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return resources;
+    return resources.filter((r) =>
+      (r.title || '').toLowerCase().includes(q) ||
+      (r.description || '').toLowerCase().includes(q) ||
+      (r.category || '').toLowerCase().includes(q) ||
+      (r.url || '').toLowerCase().includes(q)
+    );
+  }, [resources, query]);
 
   const sortedResources = useMemo(() => {
-    if (!sort.key || !sort.direction) return resources;
-    const arr = [...resources];
+    if (!sort.key || !sort.direction) return filteredResources;
+    const arr = [...filteredResources];
     const dir = sort.direction === 'asc' ? 1 : -1;
     arr.sort((a, b) => {
       switch (sort.key) {
@@ -53,12 +66,14 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({
       }
     });
     return arr;
-  }, [resources, sort]);
+  }, [filteredResources, sort]);
 
   return (
   <div>
-    <div className="flex justify-between items-center mb-6">
+    <div className="flex justify-between items-center mb-6 gap-3">
       <h2 className="text-xl font-semibold text-gray-800">Resources</h2>
+      <div className="flex-1 hidden md:block" />
+      <SearchInput value={query} onChange={setQuery} placeholder="Search resources..." />
       <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer" onClick={openCreateResource}>
         Add New Resource
       </button>
