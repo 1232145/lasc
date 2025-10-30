@@ -1,9 +1,14 @@
 import { supabase } from "@/lib/supabaseClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function FeaturedEvent() {
+  const todayDateString = new Date().toISOString().slice(0, 10);
+
   const { data, error } = await supabase
     .from("events")
     .select("*")
+    .gte("date", todayDateString)
     .order("date", { ascending: true })
     .limit(1);
 
