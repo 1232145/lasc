@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { SponsorForm } from '../forms/SponsorForm';
 import { EmptyState } from '../ui/EmptyState';
 import type { Sponsor } from '../types';
+import { SortableHeader } from '../ui/SortableHeader';
 
 interface SponsorsTabProps {
   sponsors: Sponsor[];
@@ -29,7 +30,30 @@ export const SponsorsTab: React.FC<SponsorsTabProps> = ({
   handleDeleteSponsor,
   openCreateSponsor,
   closeSponsorForm
-}) => (
+}) => {
+  type SortKey = 'name' | 'description' | 'website';
+  const [sort, setSort] = useState<{ key: SortKey | null; direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+
+  const sortedSponsors = useMemo(() => {
+    if (!sort.key || !sort.direction) return sponsors;
+    const arr = [...sponsors];
+    const dir = sort.direction === 'asc' ? 1 : -1;
+    arr.sort((a, b) => {
+      switch (sort.key) {
+        case 'name':
+          return dir * (a.name || '').localeCompare(b.name || '');
+        case 'description':
+          return dir * (a.description || '').localeCompare(b.description || '');
+        case 'website':
+          return dir * (a.website || '').localeCompare(b.website || '');
+        default:
+          return 0;
+      }
+    });
+    return arr;
+  }, [sponsors, sort]);
+
+  return (
   <div>
     <div className="flex justify-between items-center mb-6">
       <h2 className="text-xl font-semibold text-gray-800">Sponsors</h2>
@@ -68,14 +92,14 @@ export const SponsorsTab: React.FC<SponsorsTabProps> = ({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Logo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Website</th>
+              <SortableHeader label="Name" columnKey="name" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
+              <SortableHeader label="Description" columnKey="description" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
+              <SortableHeader label="Website" columnKey="website" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sponsors.map((sponsor) => (
+            {sortedSponsors.map((sponsor) => (
               <tr key={sponsor.id}>
                 <td className="px-6 py-4">
                   {sponsor.logo_url ? (
@@ -113,4 +137,5 @@ export const SponsorsTab: React.FC<SponsorsTabProps> = ({
     )}
   </div>
 );
+};
 

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ResourceForm } from '../forms/ResourceForm';
 import { EmptyState } from '../ui/EmptyState';
 import type { Resource } from '../types';
+import { SortableHeader } from '../ui/SortableHeader';
 
 interface ResourcesTabProps {
   resources: Resource[];
@@ -29,7 +30,32 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({
   handleDeleteResource,
   openCreateResource,
   closeResourceForm
-}) => (
+}) => {
+  type SortKey = 'title' | 'description' | 'category' | 'url';
+  const [sort, setSort] = useState<{ key: SortKey | null; direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+
+  const sortedResources = useMemo(() => {
+    if (!sort.key || !sort.direction) return resources;
+    const arr = [...resources];
+    const dir = sort.direction === 'asc' ? 1 : -1;
+    arr.sort((a, b) => {
+      switch (sort.key) {
+        case 'title':
+          return dir * (a.title || '').localeCompare(b.title || '');
+        case 'description':
+          return dir * (a.description || '').localeCompare(b.description || '');
+        case 'category':
+          return dir * (a.category || '').localeCompare(b.category || '');
+        case 'url':
+          return dir * (a.url || '').localeCompare(b.url || '');
+        default:
+          return 0;
+      }
+    });
+    return arr;
+  }, [resources, sort]);
+
+  return (
   <div>
     <div className="flex justify-between items-center mb-6">
       <h2 className="text-xl font-semibold text-gray-800">Resources</h2>
@@ -67,15 +93,15 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+              <SortableHeader label="Title" columnKey="title" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
+              <SortableHeader label="Description" columnKey="description" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
+              <SortableHeader label="Category" columnKey="category" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
+              <SortableHeader label="URL" columnKey="url" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {resources.map((resource) => (
+            {sortedResources.map((resource) => (
               <tr key={resource.id}>
                 <td className="px-6 py-4">
                   <div className="text-sm font-medium text-gray-900 max-w-xs whitespace-normal">{resource.title}</div>
@@ -103,4 +129,5 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({
     )}
   </div>
 );
+};
 
