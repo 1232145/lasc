@@ -4,7 +4,7 @@ import { ExternalLink } from "lucide-react";
 export const metadata = {
   title: "Resources | Littlestown Area Senior Center",
   description:
-    "Helpful links, programs, and services for older adults in the Littlestown area.",
+    "Helpful links, programs, and services for community members 60+ in the Littlestown area.",
 };
 
 export default async function ResourcesPage() {
