@@ -18,7 +18,7 @@ export default function DonatePage() {
         </h1>
         <p className="text-gray-600 mb-10">
           Your donation helps us provide meals, activities, and vital support
-          for older adults in the Littlestown community.
+          for community members 60+ in the Littlestown community.
         </p>
 
         {/* Buttons */}

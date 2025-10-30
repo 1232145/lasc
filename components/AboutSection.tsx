@@ -78,11 +78,6 @@ export default async function AboutSection() {
             <p className="text-gray-500">Board information coming soon.</p>
           )}
         </div>
-
-        <p className="text-gray-700 text-center">
-          <strong>Meetings:</strong> Held the first Wednesday of each month at
-          11:00 AM.
-        </p>
       </div>
     </section>
   );
