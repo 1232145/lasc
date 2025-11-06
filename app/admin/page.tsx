@@ -38,6 +38,8 @@ export default function AdminPage() {
     title: '',
     description: '',
     date: '',
+    start_time: '',
+    end_time: '',
     location: '',
     capacity: '',
     image_url: ''
@@ -212,7 +214,7 @@ export default function AdminPage() {
   };
 
   const clearForm = () => {
-    setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
+    setNewEvent({ title: '', description: '', date: '', start_time: '', end_time: '', location: '', capacity: '', image_url: '' });
   };
 
   const handleCreateNewEvent = () => {
@@ -262,6 +264,8 @@ export default function AdminPage() {
           title: newEvent.title,
           description: newEvent.description || null,
           date: newEvent.date,
+          start_time: newEvent.start_time || null,
+          end_time: newEvent.end_time || null,
           location: newEvent.location || null,
           capacity: newEvent.capacity ? parseInt(newEvent.capacity) : null,
           image_url: newEvent.image_url || null
@@ -274,7 +278,7 @@ export default function AdminPage() {
       }
 
       // Reset form and refresh data
-      setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
+      setNewEvent({ title: '', description: '', date: '', start_time: '', end_time: '', location: '', capacity: '', image_url: '' });
       setShowCreateEvent(false);
       fetchData();
       showSuccess('Success', 'Event created successfully!');
@@ -291,6 +295,8 @@ export default function AdminPage() {
       title: event.title,
       description: event.description || '',
       date: event.date ? event.date.split('T')[0] : '', // Convert to date format
+      start_time: event.start_time || '',
+      end_time: event.end_time || '', 
       location: event.location || '',
       capacity: event.capacity?.toString() || '',
       image_url: event.image_url || ''
@@ -312,6 +318,8 @@ export default function AdminPage() {
           title: newEvent.title,
           description: newEvent.description || null,
           date: newEvent.date,
+          start_time: newEvent.start_time || null,
+          end_time: newEvent.end_time || null,
           location: newEvent.location || null,
           capacity: newEvent.capacity ? parseInt(newEvent.capacity) : null,
           image_url: newEvent.image_url || null
@@ -326,7 +334,7 @@ export default function AdminPage() {
 
       // Reset form and refresh data
       setEditingEvent(null);
-      setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
+      setNewEvent({ title: '', description: '', date: '', start_time: '', end_time: '', location: '', capacity: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Event updated successfully!');
     } catch (err) {
@@ -374,13 +382,13 @@ export default function AdminPage() {
         year: newPhoto.year ? parseInt(newPhoto.year) : null,
         taken_at: newPhoto.taken_at || null
       }]);
-      
+
       if (error) {
         console.error('Error creating photo:', error);
         showError('Error', 'Failed to add photo. Please try again.');
         return;
       }
-      
+
       setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Photo added successfully!');
@@ -405,7 +413,7 @@ export default function AdminPage() {
   const handleUpdatePhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPhoto) return;
-    
+
     try {
       const { error } = await supabase
         .from('photos')
@@ -442,7 +450,7 @@ export default function AdminPage() {
     });
 
     if (!confirmed) return;
-    
+
     try {
       const { error } = await supabase.from('photos').delete().eq('id', photoId);
       if (error) {
@@ -450,7 +458,7 @@ export default function AdminPage() {
         showError('Error', 'Failed to delete photo. Please try again.');
         return;
       }
-      
+
       fetchData();
       showSuccess('Success', 'Photo deleted successfully!');
     } catch (err) {
@@ -550,7 +558,7 @@ export default function AdminPage() {
         showError('Error', 'Failed to delete board member. Please try again.');
         return;
       }
-      
+
       fetchData();
       showSuccess('Success', 'Board member deleted successfully!');
     } catch (err) {
@@ -868,7 +876,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <StatsCards 
+        <StatsCards
           events={events.length}
           rsvps={rsvps.length}
           resources={resources.length}

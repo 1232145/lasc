@@ -13,6 +13,8 @@ interface EventFormProps {
     title: string;
     description: string;
     date: string;
+    start_time: string;
+    end_time: string;
     location: string;
     capacity: string;
     image_url: string;
@@ -45,6 +47,20 @@ export const EventForm: React.FC<EventFormProps> = ({
             value={formData.date}
             onChange={(value) => onFormChange('date', value)}
             required
+          />
+        </FormField>
+        <FormField label="Start Time">
+          <TextInput
+            type="time"
+            value={formData.start_time}
+            onChange={(value) => onFormChange('start_time', value)}
+          />
+        </FormField>
+        <FormField label="End Time">
+          <TextInput
+            type="time"
+            value={formData.end_time}
+            onChange={(value) => onFormChange('end_time', value)}
           />
         </FormField>
         <FormField label="Location">
@@ -80,8 +96,8 @@ export const EventForm: React.FC<EventFormProps> = ({
           />
         </FormField>
       </div>
-      <FormButtons 
-        isEditing={isEditing} 
+      <FormButtons
+        isEditing={isEditing}
         onCancel={onCancel}
         submitLabel={isEditing ? 'Update Event' : 'Create Event'}
       />
