@@ -35,6 +35,7 @@ export type BoardMember = {
   name: string;
   role: string;
   email: string;
+  status: string;
 };
 
 export type Resource = {
