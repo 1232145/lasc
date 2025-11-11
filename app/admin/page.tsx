@@ -15,6 +15,7 @@ import { BoardTab } from '@/components/admin/tabs/BoardTab';
 import { ResourcesTab } from '@/components/admin/tabs/ResourcesTab';
 import { SponsorsTab } from '@/components/admin/tabs/SponsorsTab';
 import type { Event, RSVP, Photo, BoardMember, Resource, Sponsor } from '@/components/admin/types';
+import AdminSessionManager from "@/components/admin/AdminSessionManager";
 
 
 export default function AdminPage() {
@@ -374,13 +375,13 @@ export default function AdminPage() {
         year: newPhoto.year ? parseInt(newPhoto.year) : null,
         taken_at: newPhoto.taken_at || null
       }]);
-      
+
       if (error) {
         console.error('Error creating photo:', error);
         showError('Error', 'Failed to add photo. Please try again.');
         return;
       }
-      
+
       setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Photo added successfully!');
@@ -405,7 +406,7 @@ export default function AdminPage() {
   const handleUpdatePhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPhoto) return;
-    
+
     try {
       const { error } = await supabase
         .from('photos')
@@ -442,7 +443,7 @@ export default function AdminPage() {
     });
 
     if (!confirmed) return;
-    
+
     try {
       const { error } = await supabase.from('photos').delete().eq('id', photoId);
       if (error) {
@@ -450,7 +451,7 @@ export default function AdminPage() {
         showError('Error', 'Failed to delete photo. Please try again.');
         return;
       }
-      
+
       fetchData();
       showSuccess('Success', 'Photo deleted successfully!');
     } catch (err) {
@@ -550,7 +551,7 @@ export default function AdminPage() {
         showError('Error', 'Failed to delete board member. Please try again.');
         return;
       }
-      
+
       fetchData();
       showSuccess('Success', 'Board member deleted successfully!');
     } catch (err) {
@@ -834,11 +835,14 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading admin data...</p>
+      <div>
+        <AdminSessionManager />
+        <div className="min-h-screen bg-gray-50 py-12">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading admin data...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -846,147 +850,150 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage events and RSVPs for LASC</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">
-                Logged in as: {user?.email}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
-              >
-                Logout
-              </button>
+    <div>
+      <AdminSessionManager />
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-8">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+                <p className="text-gray-600">Manage events and RSVPs for LASC</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-500">
+                  Logged in as: {user?.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <StatsCards 
-          events={events.length}
-          rsvps={rsvps.length}
-          resources={resources.length}
-          photos={photos.length}
-          sponsors={sponsors.length}
-        />
-
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <TabNavigation
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            counts={{
-              events: events.length,
-              rsvps: rsvps.length,
-              photos: photos.length,
-              board: boardMembers.length,
-              resources: resources.length,
-              sponsors: sponsors.length
-            }}
+          <StatsCards
+            events={events.length}
+            rsvps={rsvps.length}
+            resources={resources.length}
+            photos={photos.length}
+            sponsors={sponsors.length}
           />
 
-          <div className="p-6">
-            {activeTab === 'events' && (
-              <EventsTab
-                events={events}
-                editingEvent={editingEvent}
-                showCreateEvent={showCreateEvent}
-                newEvent={newEvent}
-                currentEvents={currentEvents}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                startIndex={startIndex}
-                endIndex={endIndex}
-                getRSVPCountForEvent={getRSVPCountForEvent}
-                handleCreateNewEvent={handleCreateNewEvent}
-                handleUpdateEvent={handleUpdateEvent}
-                handleCreateEvent={handleCreateEvent}
-                handleFormChange={handleFormChange}
-                handleEditEvent={handleEditEvent}
-                handleDeleteEvent={handleDeleteEvent}
-                handlePageChange={handlePageChange}
-                clearForm={clearForm}
-              />
-            )}
-            {activeTab === 'rsvps' && (
-              <RSVPsTab rsvps={rsvps} />
-            )}
-            {activeTab === 'photos' && (
-              <PhotosTab
-                photos={photos}
-                editingPhoto={editingPhoto}
-                showCreatePhoto={showCreatePhoto}
-                newPhoto={newPhoto}
-                sortPhotosBy={sortPhotosBy}
-                handlePhotoFormChange={handlePhotoFormChange}
-                handleUpdatePhoto={handleUpdatePhoto}
-                handleCreatePhoto={handleCreatePhoto}
-                handleEditPhoto={handleEditPhoto}
-                handleDeletePhoto={handleDeletePhoto}
-                setSortPhotosBy={setSortPhotosBy}
-                openCreatePhoto={openCreatePhoto}
-                closePhotoForm={closePhotoForm}
-              />
-            )}
-            {activeTab === 'board' && (
-              <BoardTab
-                boardMembers={boardMembers}
-                editingBoardMember={editingBoardMember}
-                showCreateBoardMember={showCreateBoardMember}
-                newBoardMember={newBoardMember}
-                handleBoardFormChange={handleBoardFormChange}
-                handleUpdateBoardMember={handleUpdateBoardMember}
-                handleCreateBoardMember={handleCreateBoardMember}
-                handleEditBoardMember={handleEditBoardMember}
-                handleDeleteBoardMember={handleDeleteBoardMember}
-                openCreateBoardMember={openCreateBoardMember}
-                closeBoardMemberForm={closeBoardMemberForm}
-              />
-            )}
-            {activeTab === 'resources' && (
-              <ResourcesTab
-                resources={resources}
-                editingResource={editingResource}
-                showCreateResource={showCreateResource}
-                newResource={newResource}
-                handleResourceFormChange={handleResourceFormChange}
-                handleUpdateResource={handleUpdateResource}
-                handleCreateResource={handleCreateResource}
-                handleEditResource={handleEditResource}
-                handleDeleteResource={handleDeleteResource}
-                openCreateResource={openCreateResource}
-                closeResourceForm={closeResourceForm}
-              />
-            )}
-            {activeTab === 'sponsors' && (
-              <SponsorsTab
-                sponsors={sponsors}
-                editingSponsor={editingSponsor}
-                showCreateSponsor={showCreateSponsor}
-                newSponsor={newSponsor}
-                handleSponsorFormChange={handleSponsorFormChange}
-                handleUpdateSponsor={handleUpdateSponsor}
-                handleCreateSponsor={handleCreateSponsor}
-                handleEditSponsor={handleEditSponsor}
-                handleDeleteSponsor={handleDeleteSponsor}
-                openCreateSponsor={openCreateSponsor}
-                closeSponsorForm={closeSponsorForm}
-              />
-            )}
-            {isRoot && (
-              <div>
-                <RootManageUsersPanel />
-              </div>
-            )}
-          </div>
-        </div>
+          {/* Tab Navigation */}
+          <div className="bg-white rounded-lg shadow mb-6">
+            <TabNavigation
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              counts={{
+                events: events.length,
+                rsvps: rsvps.length,
+                photos: photos.length,
+                board: boardMembers.length,
+                resources: resources.length,
+                sponsors: sponsors.length
+              }}
+            />
 
+            <div className="p-6">
+              {activeTab === 'events' && (
+                <EventsTab
+                  events={events}
+                  editingEvent={editingEvent}
+                  showCreateEvent={showCreateEvent}
+                  newEvent={newEvent}
+                  currentEvents={currentEvents}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  startIndex={startIndex}
+                  endIndex={endIndex}
+                  getRSVPCountForEvent={getRSVPCountForEvent}
+                  handleCreateNewEvent={handleCreateNewEvent}
+                  handleUpdateEvent={handleUpdateEvent}
+                  handleCreateEvent={handleCreateEvent}
+                  handleFormChange={handleFormChange}
+                  handleEditEvent={handleEditEvent}
+                  handleDeleteEvent={handleDeleteEvent}
+                  handlePageChange={handlePageChange}
+                  clearForm={clearForm}
+                />
+              )}
+              {activeTab === 'rsvps' && (
+                <RSVPsTab rsvps={rsvps} />
+              )}
+              {activeTab === 'photos' && (
+                <PhotosTab
+                  photos={photos}
+                  editingPhoto={editingPhoto}
+                  showCreatePhoto={showCreatePhoto}
+                  newPhoto={newPhoto}
+                  sortPhotosBy={sortPhotosBy}
+                  handlePhotoFormChange={handlePhotoFormChange}
+                  handleUpdatePhoto={handleUpdatePhoto}
+                  handleCreatePhoto={handleCreatePhoto}
+                  handleEditPhoto={handleEditPhoto}
+                  handleDeletePhoto={handleDeletePhoto}
+                  setSortPhotosBy={setSortPhotosBy}
+                  openCreatePhoto={openCreatePhoto}
+                  closePhotoForm={closePhotoForm}
+                />
+              )}
+              {activeTab === 'board' && (
+                <BoardTab
+                  boardMembers={boardMembers}
+                  editingBoardMember={editingBoardMember}
+                  showCreateBoardMember={showCreateBoardMember}
+                  newBoardMember={newBoardMember}
+                  handleBoardFormChange={handleBoardFormChange}
+                  handleUpdateBoardMember={handleUpdateBoardMember}
+                  handleCreateBoardMember={handleCreateBoardMember}
+                  handleEditBoardMember={handleEditBoardMember}
+                  handleDeleteBoardMember={handleDeleteBoardMember}
+                  openCreateBoardMember={openCreateBoardMember}
+                  closeBoardMemberForm={closeBoardMemberForm}
+                />
+              )}
+              {activeTab === 'resources' && (
+                <ResourcesTab
+                  resources={resources}
+                  editingResource={editingResource}
+                  showCreateResource={showCreateResource}
+                  newResource={newResource}
+                  handleResourceFormChange={handleResourceFormChange}
+                  handleUpdateResource={handleUpdateResource}
+                  handleCreateResource={handleCreateResource}
+                  handleEditResource={handleEditResource}
+                  handleDeleteResource={handleDeleteResource}
+                  openCreateResource={openCreateResource}
+                  closeResourceForm={closeResourceForm}
+                />
+              )}
+              {activeTab === 'sponsors' && (
+                <SponsorsTab
+                  sponsors={sponsors}
+                  editingSponsor={editingSponsor}
+                  showCreateSponsor={showCreateSponsor}
+                  newSponsor={newSponsor}
+                  handleSponsorFormChange={handleSponsorFormChange}
+                  handleUpdateSponsor={handleUpdateSponsor}
+                  handleCreateSponsor={handleCreateSponsor}
+                  handleEditSponsor={handleEditSponsor}
+                  handleDeleteSponsor={handleDeleteSponsor}
+                  openCreateSponsor={openCreateSponsor}
+                  closeSponsorForm={closeSponsorForm}
+                />
+              )}
+              {isRoot && (
+                <div>
+                  <RootManageUsersPanel />
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
