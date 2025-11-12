@@ -45,7 +45,7 @@ export default function AdminSessionManager() {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(async () => {
         await supabase.auth.signOut();
-        showInfo("Session expired", "You’ve been logged out due to inactivity.");
+        showInfo("Session expired", "You’ve been logged out due to inactivity.", 0);
         router.push("/admin/login");
       }, timeoutMs);
     };
