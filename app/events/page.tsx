@@ -4,21 +4,18 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-interface EventsPageProps {
-  searchParams?: { pastPage?: string; viewAllUpcoming?: string };
-}
-
-export default async function EventsPage({ searchParams }: EventsPageProps) {
+export default async function EventsPage({ searchParams }: any) {
   const now = new Date();
 
   // --- Past events pagination ---
-  const pastPage = searchParams?.pastPage ? parseInt(searchParams.pastPage) : 1;
+  const pastPage = searchParams?.pastPage ? parseInt(searchParams.pastPage, 10) : 1;
   const pastPageSize = 10;
 
   // --- Upcoming events pagination / "view all" ---
-  const upcomingPageSize = 100; // Default max to fetch
   const viewAllUpcoming = searchParams?.viewAllUpcoming === "true";
+  const upcomingPageSize = 100;
 
+  // --- Fetch upcoming events ---
   const upcomingQuery = supabase
     .from("events")
     .select("*")
@@ -40,7 +37,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     );
   }
 
-  // --- Fetch past events with server-side pagination ---
+  // --- Fetch past events ---
   const { data: pastEvents, count: totalPastCount, error: pastError } = await supabase
     .from("events")
     .select("*", { count: "exact" })
@@ -58,14 +55,13 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   return (
     <section className="py-16 bg-[var(--background)] min-h-screen">
       <div className="max-w-6xl mx-auto px-6">
-        {/* Upcoming Events */}
         <h1 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">
           Upcoming Events
         </h1>
 
         {upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="grid gap-12 md:grid-cols-2 mb-4">
-            {upcomingEvents.map((event) => (
+            {upcomingEvents.map((event: any) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
@@ -75,7 +71,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           </p>
         )}
 
-        {/* "View All Upcoming" Button */}
         {!viewAllUpcoming && upcomingEvents && upcomingEvents.length >= upcomingPageSize && (
           <div className="text-center mb-8">
             <Link
@@ -87,23 +82,18 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           </div>
         )}
 
-        {/* Past Events Toggle */}
         {pastEvents && pastEvents.length > 0 && (
-          <details
-            className="mt-12"
-            open={searchParams?.pastPage !== undefined} // Open if pastPage exists
-          >
+          <details className="mt-12" open={searchParams?.pastPage !== undefined}>
             <summary className="cursor-pointer text-center text-lg font-bold py-3 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
               Show Past Events
             </summary>
 
             <div className="grid gap-12 md:grid-cols-2 mt-6">
-              {pastEvents.map((event) => (
+              {pastEvents.map((event: any) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
 
-            {/* Pagination Controls */}
             <div className="flex justify-center items-center gap-4 mt-6 flex-wrap">
               {pastPage > 1 && (
                 <Link
