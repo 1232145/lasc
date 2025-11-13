@@ -15,6 +15,7 @@ import { BoardTab } from '@/components/admin/tabs/BoardTab';
 import { ResourcesTab } from '@/components/admin/tabs/ResourcesTab';
 import { SponsorsTab } from '@/components/admin/tabs/SponsorsTab';
 import type { Event, RSVP, Photo, BoardMember, Resource, Sponsor } from '@/components/admin/types';
+import AdminCenterToggle from "@/components/admin/AdminCenterToggle";
 
 
 export default function AdminPage() {
@@ -867,6 +868,11 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+
+        {/* Center Status Toggle */}
+  <div className="my-4">
+    <AdminCenterToggle />
+  </div>
 
         <StatsCards 
           events={events.length}
