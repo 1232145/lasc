@@ -4,6 +4,7 @@ export default async function AboutSection() {
   const { data: board, error } = await supabase
     .from("board_members")
     .select("*")
+    .eq('status', 'visible')
     .order("order_index", { ascending: true });
 
   if (error) {

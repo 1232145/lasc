@@ -42,7 +42,7 @@ export default async function ResourcesPage() {
   return (
     <section className="py-16 bg-[var(--background)] min-h-screen">
       <div className="max-w-6xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-3 text-center text-gray-800 dark:text-gray-100">
+        <h1 className="text-3xl font-bold mb-3 text-center text-gray-800">
           Community Resources
         </h1>
         <p className="text-center text-gray-600 mb-12">
@@ -51,7 +51,7 @@ export default async function ResourcesPage() {
 
         {Object.entries(grouped).map(([category, resources]: any) => (
           <div key={category} className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-700 dark:text-gray-200 border-b border-gray-300 pb-2">
+            <h2 className="text-2xl font-semibold mb-6 text-gray-700 border-b border-gray-300 pb-2">
               {category}
             </h2>
 

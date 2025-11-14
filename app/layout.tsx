@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ConfirmationProvider } from "@/contexts/ConfirmationContext";
 import type { Metadata } from "next";
+import CenterClosedPopup from "@/components/CenterClosedPopup";
 
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
         <ToastProvider>
           <ConfirmationProvider>
             <Navbar />
+            <CenterClosedPopup />
             <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
             <Footer />
           </ConfirmationProvider>

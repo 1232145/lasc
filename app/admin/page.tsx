@@ -15,6 +15,7 @@ import { BoardTab } from '@/components/admin/tabs/BoardTab';
 import { ResourcesTab } from '@/components/admin/tabs/ResourcesTab';
 import { SponsorsTab } from '@/components/admin/tabs/SponsorsTab';
 import type { Event, RSVP, Photo, BoardMember, Resource, Sponsor } from '@/components/admin/types';
+import AdminCenterToggle from "@/components/admin/AdminCenterToggle";
 import AdminSessionManager from "@/components/admin/AdminSessionManager";
 
 
@@ -560,6 +561,33 @@ export default function AdminPage() {
     }
   };
 
+  const handleToggleVisibility = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'visible' ? 'hidden' : 'visible';
+
+    try {
+      const { error } = await supabase
+        .from('board_members')
+        .update({ status: newStatus })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error toggling visibility:', error);
+        showError('Error', 'Failed to toggle board member visibility.');
+        return;
+      }
+
+      // Refresh the list of members
+      fetchData();
+      showSuccess(
+        'Success',
+        `Board member is now ${newStatus === 'visible' ? 'visible' : 'hidden'} on the public site.`
+      );
+    } catch (err) {
+      console.error('Error toggling visibility:', err);
+      showError('Error', 'Failed to toggle board member visibility.');
+    }
+  };
+
   // Resource management functions
   const handleCreateResource = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -874,6 +902,11 @@ export default function AdminPage() {
             </div>
           </div>
 
+          {/* Center Status Toggle */}
+          <div className="my-4">
+            <AdminCenterToggle />
+          </div>
+
           <StatsCards
             events={events.length}
             rsvps={rsvps.length}
@@ -951,6 +984,7 @@ export default function AdminPage() {
                   handleCreateBoardMember={handleCreateBoardMember}
                   handleEditBoardMember={handleEditBoardMember}
                   handleDeleteBoardMember={handleDeleteBoardMember}
+                  handleToggleVisibility={handleToggleVisibility}
                   openCreateBoardMember={openCreateBoardMember}
                   closeBoardMemberForm={closeBoardMemberForm}
                 />
