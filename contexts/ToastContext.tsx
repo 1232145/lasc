@@ -5,9 +5,9 @@ import ToastComponent, { Toast, ToastType } from "@/components/Toast";
 
 interface ToastContextType {
   showToast: (type: ToastType, title: string, message?: string, duration?: number) => void;
-  showSuccess: (title: string, message?: string) => void;
-  showError: (title: string, message?: string) => void;
-  showInfo: (title: string, message?: string) => void;
+  showSuccess: (title: string, message?: string, duration?: number) => void;
+  showError: (title: string, message?: string, duration?: number) => void;
+  showInfo: (title: string, message?: string, duration?: number) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -42,23 +42,24 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     []
   );
 
+  // ✅ Updated helper functions to support duration
   const showSuccess = useCallback(
-    (title: string, message?: string) => {
-      showToast("success", title, message);
+    (title: string, message?: string, duration?: number) => {
+      showToast("success", title, message, duration);
     },
     [showToast]
   );
 
   const showError = useCallback(
-    (title: string, message?: string) => {
-      showToast("error", title, message);
+    (title: string, message?: string, duration?: number) => {
+      showToast("error", title, message, duration);
     },
     [showToast]
   );
 
   const showInfo = useCallback(
-    (title: string, message?: string) => {
-      showToast("info", title, message);
+    (title: string, message?: string, duration?: number) => {
+      showToast("info", title, message, duration);
     },
     [showToast]
   );
