@@ -13,6 +13,12 @@ export default function Navbar() {
 
         <div className="flex flex-wrap gap-5 mt-2 md:mt-0 text-gray-700 font-medium items-center">
           <Link
+            href="/"
+            className="hover:text-blue-700 transition-colors"
+          >
+            Home
+          </Link>
+          <Link
             href="/events"
             className="hover:text-blue-700 transition-colors"
           >
