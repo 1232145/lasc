@@ -297,7 +297,7 @@ export default function AdminPage() {
       description: event.description || '',
       date: event.date ? event.date.split('T')[0] : '', // Convert to date format
       start_time: event.start_time || '',
-      end_time: event.end_time || '', 
+      end_time: event.end_time || '',
       location: event.location || '',
       capacity: event.capacity?.toString() || '',
       image_url: event.image_url || ''
@@ -569,31 +569,31 @@ export default function AdminPage() {
   };
 
   const handleToggleVisibility = async (id: string, currentStatus: string) => {
-  const newStatus = currentStatus === 'visible' ? 'hidden' : 'visible';
+    const newStatus = currentStatus === 'visible' ? 'hidden' : 'visible';
 
-  try {
-    const { error } = await supabase
-      .from('board_members')
-      .update({ status: newStatus })
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('board_members')
+        .update({ status: newStatus })
+        .eq('id', id);
 
-    if (error) {
-      console.error('Error toggling visibility:', error);
+      if (error) {
+        console.error('Error toggling visibility:', error);
+        showError('Error', 'Failed to toggle board member visibility.');
+        return;
+      }
+
+      // Refresh the list of members
+      fetchData();
+      showSuccess(
+        'Success',
+        `Board member is now ${newStatus === 'visible' ? 'visible' : 'hidden'} on the public site.`
+      );
+    } catch (err) {
+      console.error('Error toggling visibility:', err);
       showError('Error', 'Failed to toggle board member visibility.');
-      return;
     }
-
-    // Refresh the list of members
-    fetchData();
-    showSuccess(
-      'Success',
-      `Board member is now ${newStatus === 'visible' ? 'visible' : 'hidden'} on the public site.`
-    );
-  } catch (err) {
-    console.error('Error toggling visibility:', err);
-    showError('Error', 'Failed to toggle board member visibility.');
-  }
-};
+  };
 
   // Resource management functions
   const handleCreateResource = async (e: React.FormEvent) => {
@@ -820,6 +820,12 @@ export default function AdminPage() {
 
 
   // Helper functions for opening/closing forms
+  const closeEventForm = () => {
+    setEditingEvent(null);  // resets editingEvent
+    setShowCreateEvent(false);  // resets create state
+    clearForm();  // clears the form data
+  };
+  
   const openCreatePhoto = () => {
     setEditingPhoto(null);
     setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
@@ -905,11 +911,11 @@ export default function AdminPage() {
         </div>
 
         {/* Center Status Toggle */}
-  <div className="my-4">
-    <AdminCenterToggle />
-  </div>
+        <div className="my-4">
+          <AdminCenterToggle />
+        </div>
 
-        <StatsCards 
+        <StatsCards
           events={events.length}
           rsvps={rsvps.length}
           resources={resources.length}
@@ -952,6 +958,7 @@ export default function AdminPage() {
                 handleEditEvent={handleEditEvent}
                 handleDeleteEvent={handleDeleteEvent}
                 handlePageChange={handlePageChange}
+                closeEventForm={closeEventForm}
                 clearForm={clearForm}
               />
             )}
