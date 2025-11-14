@@ -31,7 +31,13 @@ export default async function FeaturedEvent() {
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
           <h3 className="text-xl font-bold mb-2">{event.title}</h3>
           <p className="text-gray-600 dark:text-gray-300 mb-1">
-            {new Date(event.date).toLocaleDateString()}
+            {event.date
+              ? new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })
+              : "Date TBD"}
           </p>
           <p className="text-gray-700 dark:text-gray-200">{event.description}</p>
         </div>
