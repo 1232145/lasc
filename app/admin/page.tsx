@@ -16,6 +16,7 @@ import { ResourcesTab } from '@/components/admin/tabs/ResourcesTab';
 import { SponsorsTab } from '@/components/admin/tabs/SponsorsTab';
 import type { Event, RSVP, Photo, BoardMember, Resource, Sponsor } from '@/components/admin/types';
 import AdminCenterToggle from "@/components/admin/AdminCenterToggle";
+import AdminSessionManager from "@/components/admin/AdminSessionManager";
 
 
 export default function AdminPage() {
@@ -870,11 +871,14 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-orange-50 py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-            <p className="mt-4 text-stone-600">Loading admin data...</p>
+      <div>
+        <AdminSessionManager />
+        <div className="min-h-screen bg-orange-50 py-12">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+              <p className="mt-4 text-stone-600">Loading admin data...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -882,7 +886,9 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-orange-50 py-12">
+    <div>
+      <AdminSessionManager />
+ <div className="min-h-screen bg-orange-50 py-12">
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-8">
           <div className="flex justify-between items-start">
@@ -900,9 +906,9 @@ export default function AdminPage() {
               >
                 Logout
               </button>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Center Status Toggle */}
         <div className="my-4">
@@ -1029,6 +1035,7 @@ export default function AdminPage() {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );
