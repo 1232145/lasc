@@ -24,6 +24,7 @@ interface EventsTabProps {
   handleEditEvent: (event: Event) => void;
   handleDeleteEvent: (eventId: string, eventTitle: string) => void;
   handlePageChange: (page: number) => void;
+  closeEventForm: () => void;
   clearForm: () => void;
 }
 
@@ -45,6 +46,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
   handleEditEvent,
   handleDeleteEvent,
   handlePageChange,
+  closeEventForm,
   clearForm
 }) => {
   type SortKey = 'title' | 'description' | 'date' | 'location' | 'capacity' | 'rsvps';
@@ -98,10 +100,10 @@ export const EventsTab: React.FC<EventsTabProps> = ({
 
   return (
     <div>
-    <div className="flex justify-between items-center mb-6 gap-3">
+      <div className="flex justify-between items-center mb-6 gap-3">
         <h2 className="text-xl font-semibold text-gray-800">Events</h2>
-      <div className="flex-1 hidden md:block" />
-      <SearchInput value={query} onChange={setQuery} placeholder="Search events..." />
+        <div className="flex-1 hidden md:block" />
+        <SearchInput value={query} onChange={setQuery} placeholder="Search events..." />
         <button
           onClick={handleCreateNewEvent}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
@@ -110,33 +112,16 @@ export const EventsTab: React.FC<EventsTabProps> = ({
         </button>
       </div>
 
-      {editingEvent && (
-        <EventForm
-          isEditing={true}
-          onSubmit={handleUpdateEvent}
-          onCancel={() => {
-            handleEditEvent(null as any);
-            clearForm();
-          }}
-          title={`Edit Event: ${editingEvent.title}`}
-          formData={newEvent}
-          onFormChange={handleFormChange}
-        />
-      )}
-
-      {showCreateEvent && (
-        <EventForm
-          isEditing={false}
-          onSubmit={handleCreateEvent}
-          onCancel={() => {
-            handleCreateNewEvent();
-            clearForm();
-          }}
-          title="Create New Event"
-          formData={newEvent}
-          onFormChange={handleFormChange}
-        />
-      )}
+      {(editingEvent || showCreateEvent) && (
+  <EventForm
+    isEditing={!!editingEvent}
+    formData={newEvent}
+    onFormChange={handleFormChange}
+    onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
+    onCancel={closeEventForm}
+    title={editingEvent ? `Edit Event: ${editingEvent.title}` : 'Create New Event'}
+  />
+)}
 
       {events.length === 0 ? (
         <EmptyState message="No events found." />
@@ -167,7 +152,16 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {event.date ? new Date(`${event.date}T00:00:00`).toLocaleDateString() : 'TBD'}
+                      {event.date
+                        ? new Date(`${event.date}T00:00:00`).toLocaleDateString()
+                        : 'TBD'}
+                      {(event.start_time || event.end_time) && (
+                        <div className="text-gray-500 text-xs">
+                          {event.start_time
+                            ? `🕒 ${event.start_time}${event.end_time ? ` – ${event.end_time}` : ''}`
+                            : ''}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-500 max-w-2xl whitespace-normal">{event.location || '-'}</div>

@@ -2,6 +2,8 @@ export type Event = {
   id: string;
   title: string;
   date: string | null;
+  start_time: string;
+  end_time: string;
   description?: string;
   location?: string;
   capacity?: number;
