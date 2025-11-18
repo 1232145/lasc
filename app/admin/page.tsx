@@ -969,7 +969,12 @@ export default function AdminPage() {
               />
             )}
             {activeTab === 'rsvps' && (
-              <RSVPsTab rsvps={rsvps} />
+              <RSVPsTab 
+                rsvps={rsvps} 
+                onEmailSent={() => {
+                  showSuccess('Emails sent successfully', 'All RSVPs have been notified.');
+                }}
+              />
             )}
             {activeTab === 'photos' && (
               <PhotosTab

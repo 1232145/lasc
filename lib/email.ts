@@ -81,3 +81,64 @@ export async function notifyAdminOfContact(name: string, email: string, message:
     return { success: false, error };
   }
 }
+
+// Helper function to convert plain text to HTML paragraphs
+function formatEmailBody(text: string): string {
+  // Split by double newlines for paragraphs
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map(para => para.trim())
+    .filter(para => para.length > 0)
+    .map(para => {
+      // Convert single newlines to <br> tags within paragraphs
+      const withBreaks = para.replace(/\n/g, '<br>');
+      return `<p style="margin: 0 0 1em 0;">${withBreaks}</p>`;
+    });
+  
+  return paragraphs.join('');
+}
+
+export async function sendBulkEventEmail(
+  recipients: Array<{ name: string; email: string }>,
+  subject: string,
+  body: string
+) {
+  const results = [];
+  let successCount = 0;
+  let failureCount = 0;
+
+  for (const recipient of recipients) {
+    try {
+      // Replace placeholders in body with recipient's name
+      const personalizedBody = body.replace(/\{name\}/g, recipient.name);
+      
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: recipient.email,
+        subject: subject,
+        html: `
+          <div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.6; color: #333;">
+            ${formatEmailBody(personalizedBody)}
+            <p style="margin-top: 1.5em; margin-bottom: 0;">Best regards,<br>LASC Team</p>
+          </div>
+        `,
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      results.push({ email: recipient.email, success: true, messageId: info.messageId });
+      successCount++;
+    } catch (error) {
+      console.error(`Error sending email to ${recipient.email}:`, error);
+      results.push({ email: recipient.email, success: false, error: String(error) });
+      failureCount++;
+    }
+  }
+
+  return {
+    success: failureCount === 0,
+    successCount,
+    failureCount,
+    total: recipients.length,
+    results
+  };
+}
