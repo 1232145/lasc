@@ -119,7 +119,6 @@ export async function sendBulkEventEmail(
         html: `
           <div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.6; color: #333;">
             ${formatEmailBody(personalizedBody)}
-            <p style="margin-top: 1.5em; margin-bottom: 0;">Best regards,<br>LASC Team</p>
           </div>
         `,
       };
