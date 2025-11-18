@@ -5,14 +5,16 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage({ searchParams }: any) {
+  // Await searchParams before using its properties
+  const params = await searchParams;
   const now = new Date();
 
   // --- Past events pagination ---
-  const pastPage = searchParams?.pastPage ? parseInt(searchParams.pastPage, 10) : 1;
+  const pastPage = params?.pastPage ? parseInt(params.pastPage, 10) : 1;
   const pastPageSize = 10;
 
   // --- Upcoming events pagination / "view all" ---
-  const viewAllUpcoming = searchParams?.viewAllUpcoming === "true";
+  const viewAllUpcoming = params?.viewAllUpcoming === "true";
   const upcomingPageSize = 100;
 
   // --- Fetch upcoming events ---
@@ -83,7 +85,7 @@ export default async function EventsPage({ searchParams }: any) {
         )}
 
         {pastEvents && pastEvents.length > 0 && (
-          <details className="mt-12" open={searchParams?.pastPage !== undefined}>
+          <details className="mt-12" open={params?.pastPage !== undefined}>
             <summary className="cursor-pointer text-center text-lg font-bold py-3 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
               Show Past Events
             </summary>
