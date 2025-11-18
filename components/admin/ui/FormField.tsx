@@ -15,8 +15,8 @@ export const FormField: React.FC<FormFieldProps> = ({
   className = '' 
 }) => (
   <div className={className}>
-    <label className="block text-sm font-medium text-gray-700 mb-1">
-      {label} {required && '*'}
+    <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">
+      {label} {required && <span className="text-orange-600 dark:text-orange-400">*</span>}
     </label>
     {children}
   </div>
@@ -43,7 +43,7 @@ export const TextInput: React.FC<TextInputProps> = ({
     type={type}
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className={`w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100 ${className}`}
+    className={`w-full border border-orange-300 dark:border-stone-600 rounded-lg px-3 py-2 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-500 dark:placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors ${className}`}
     placeholder={placeholder}
     required={required}
   />
@@ -67,7 +67,7 @@ export const TextareaInput: React.FC<TextareaInputProps> = ({
   <textarea
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className={`w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-100 ${className}`}
+    className={`w-full border border-orange-300 dark:border-stone-600 rounded-lg px-3 py-2 bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-500 dark:placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors resize-vertical ${className}`}
     placeholder={placeholder}
     rows={rows}
   />

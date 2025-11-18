@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/ToastContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import RootManageUsersPanel from 'components/RootManageUsersPanel';
-import { StatsCards } from '@/components/admin/ui/StatsCards';
+import StatsCards from '@/components/admin/ui/StatsCards';
 import { TabNavigation } from '@/components/admin/ui/TabNavigation';
 import { EventsTab } from '@/components/admin/tabs/EventsTab';
 import { RSVPsTab } from '@/components/admin/tabs/RSVPsTab';
@@ -115,7 +115,7 @@ export default function AdminPage() {
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle() instead of single()
 
       if (error) {
         console.error('Error checking user role:', error.message);
@@ -192,13 +192,7 @@ export default function AdminPage() {
     setSponsors(sponsorsData || []);
     setLoading(false);
 
-    // check if current user has Root-access
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-    setIsRoot(roleData?.role === "root");
+    // Remove duplicate role check - it's already handled in the useEffect above
   };
 
   const getRSVPCountForEvent = (eventId: string) => {
@@ -879,11 +873,11 @@ export default function AdminPage() {
     return (
       <div>
         <AdminSessionManager />
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-screen bg-orange-50 py-12">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading admin data...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+              <p className="mt-4 text-stone-600">Loading admin data...</p>
             </div>
           </div>
         </div>
@@ -894,24 +888,24 @@ export default function AdminPage() {
   return (
     <div>
       <AdminSessionManager />
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-8">
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-                <p className="text-gray-600">Manage events and RSVPs for LASC</p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">
-                  Logged in as: {user?.email}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
-                >
-                  Logout
-                </button>
+ <div className="min-h-screen bg-orange-50 py-12">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="mb-8">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-stone-900 mb-2">Admin Dashboard</h1>
+              <p className="text-stone-600">Manage events and RSVPs for LASC</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-stone-500">
+                Logged in as: {user?.email}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors cursor-pointer font-medium"
+              >
+                Logout
+              </button>
               </div>
             </div>
           </div>
@@ -924,25 +918,24 @@ export default function AdminPage() {
         <StatsCards
           events={events.length}
           rsvps={rsvps.length}
-          resources={resources.length}
-          photos={photos.length}
           sponsors={sponsors.length}
+          photos={photos.length}
         />
 
-          {/* Tab Navigation */}
-          <div className="bg-white rounded-lg shadow mb-6">
-            <TabNavigation
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              counts={{
-                events: events.length,
-                rsvps: rsvps.length,
-                photos: photos.length,
-                board: boardMembers.length,
-                resources: resources.length,
-                sponsors: sponsors.length
-              }}
-            />
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-xl shadow-lg mb-6 border border-orange-200">
+          <TabNavigation
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            counts={{
+              events: events.length,
+              rsvps: rsvps.length,
+              photos: photos.length,
+              board: boardMembers.length,
+              resources: resources.length,
+              sponsors: sponsors.length
+            }}
+          />
 
           <div className="p-6">
             {activeTab === 'events' && (

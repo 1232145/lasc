@@ -57,10 +57,10 @@ export default function EventCard({ event }: { event: any }) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 transition hover:shadow-lg">
+    <div className="card bg-[var(--bg-elevated)] rounded-xl shadow-[var(--shadow-md)] p-8 border border-[var(--border-primary)] transition-all duration-300 hover:shadow-[var(--shadow-warm)] hover:transform hover:-translate-y-2">
       {/* Event header */}
       {event.image_url && (
-        <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
+        <div className="relative w-full h-52 mb-6 rounded-xl overflow-hidden border border-[var(--border-secondary)]">
           <Image
             src={event.image_url}
             alt={event.title}
@@ -70,9 +70,9 @@ export default function EventCard({ event }: { event: any }) {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">{event.title}</h2>
+      <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-3 font-serif">{event.title}</h2>
 
-      <p className="text-gray-600 mb-1 text-lg">
+      <p className="text-[var(--text-secondary)] mb-2 text-lg font-medium">
         {event.date
           ? new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", {
               weekday: "long",
@@ -84,17 +84,17 @@ export default function EventCard({ event }: { event: any }) {
 
       {/* show start/end time if they exist */}
       {event.start_time && (
-        <p className="text-gray-500 mb-1 text-base">
+        <p className="text-[var(--text-accent)] mb-2 text-base font-medium">
           🕒 {formatTime(event.start_time)}
           {event.end_time ? ` – ${formatTime(event.end_time)}` : ""}
         </p>
       )}
 
       {event.location && (
-        <p className="text-gray-500 mb-4">📍 {event.location}</p>
+        <p className="text-[var(--text-accent)] mb-5 font-medium">📍 {event.location}</p>
       )}
 
-      <p className="text-gray-700 mb-6 leading-relaxed text-lg">
+      <p className="text-[var(--text-tertiary)] mb-8 leading-relaxed text-base">
         {event.description || "Join us for this community event!"}
       </p>
 
@@ -102,7 +102,7 @@ export default function EventCard({ event }: { event: any }) {
       {!open && !submitted && (
         <button
           onClick={() => setOpen(true)}
-          className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 rounded-md text-lg transition-colors"
+          className="btn-primary w-full text-white font-semibold py-3 rounded-xl text-lg shadow-[var(--shadow-lg)]"
         >
           Sign Up for This Event
         </button>
@@ -111,20 +111,20 @@ export default function EventCard({ event }: { event: any }) {
       {open && !submitted && (
         <form
           onSubmit={handleSubmit}
-          className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200"
+          className="mt-6 bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-secondary)] shadow-[var(--shadow-xs)]"
         >
           {errorMsg && (
-            <p className="text-red-600 text-sm text-center mb-2">{errorMsg}</p>
+            <p className="text-[var(--text-error)] text-sm text-center mb-4 font-medium bg-[var(--coral-50)] border border-[var(--border-error)] rounded-lg py-2 px-3">{errorMsg}</p>
           )}
 
-          <div className="grid gap-3">
+          <div className="grid gap-4">
             <input
               type="text"
               name="name"
               value={form.name}
               onChange={handleChange}
               placeholder="Full Name *"
-              className="border border-gray-300 rounded-md px-3 py-2 text-lg focus:ring-2 focus:ring-blue-100"
+              className="border-[var(--border-primary)] bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] transition-colors shadow-[var(--shadow-xs)]"
               required
             />
             <input
@@ -133,7 +133,7 @@ export default function EventCard({ event }: { event: any }) {
               value={form.email}
               onChange={handleChange}
               placeholder="Email *"
-              className="border border-gray-300 rounded-md px-3 py-2 text-lg focus:ring-2 focus:ring-blue-100"
+              className="border-[var(--border-primary)] bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] transition-colors shadow-[var(--shadow-xs)]"
               required
             />
             <input
@@ -142,27 +142,27 @@ export default function EventCard({ event }: { event: any }) {
               value={form.phone}
               onChange={handleChange}
               placeholder="Phone (optional)"
-              className="border border-gray-300 rounded-md px-3 py-2 text-lg focus:ring-2 focus:ring-blue-100"
+              className="border-[var(--border-primary)] bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] transition-colors shadow-[var(--shadow-xs)]"
             />
           </div>
 
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-4 mt-6">
             <button
               type="submit"
               disabled={loading}
-              className={`flex-1 text-white font-medium py-2.5 rounded-md text-lg transition-colors ${
+              className={`btn-primary flex-1 text-white font-medium py-3 rounded-xl text-base transition-all duration-300 ${
                 loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-700 hover:bg-blue-800"
+                  ? "bg-[var(--neutral-400)] cursor-not-allowed opacity-60"
+                  : "shadow-[var(--shadow-md)]"
               }`}
             >
-              {loading ? "Submitting..." : "Submit"}
+              {loading ? "Submitting..." : "Submit RSVP"}
             </button>
 
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="flex-1 border border-gray-300 text-gray-600 font-medium py-2.5 rounded-md text-lg hover:bg-gray-100"
+              className="btn-secondary flex-1 font-medium py-3 rounded-xl text-base"
             >
               Cancel
             </button>
@@ -171,7 +171,7 @@ export default function EventCard({ event }: { event: any }) {
       )}
 
       {submitted && (
-        <div className="bg-green-50 border border-green-300 text-green-700 text-center rounded-lg p-4 mt-4 text-lg font-medium">
+        <div className="bg-[var(--success-50)] border border-[var(--border-success)] text-[var(--text-success)] text-center rounded-xl p-5 mt-6 text-base font-medium shadow-[var(--shadow-xs)]">
           ✅ Thanks for RSVPing! We look forward to seeing you.
         </div>
       )}

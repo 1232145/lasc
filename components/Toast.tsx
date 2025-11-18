@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, XCircle, X } from "lucide-react";
+import { CheckCircle, XCircle, X, Info } from "lucide-react";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -45,26 +45,26 @@ const ToastComponent = ({ toast, onRemove }: ToastProps) => {
   const getIcon = () => {
     switch (toast.type) {
       case "success":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />;
       case "error":
-        return <XCircle className="w-5 h-5 text-red-500" />;
+        return <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />;
       case "info":
-        return <XCircle className="w-5 h-5 text-blue-500" />;
+        return <Info className="w-5 h-5 text-orange-600 dark:text-orange-400" />;
       default:
-        return <XCircle className="w-5 h-5 text-gray-500" />;
+        return <XCircle className="w-5 h-5 text-stone-500 dark:text-stone-400" />;
     }
   };
 
   const getBackgroundColor = () => {
     switch (toast.type) {
       case "success":
-        return "bg-green-50 border-green-200";
+        return "bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700";
       case "error":
-        return "bg-red-50 border-red-200";
+        return "bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700";
       case "info":
-        return "bg-blue-50 border-blue-200";
+        return "bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-700";
       default:
-        return "bg-gray-50 border-gray-200";
+        return "bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700";
     }
   };
 
@@ -79,14 +79,14 @@ const ToastComponent = ({ toast, onRemove }: ToastProps) => {
       >
         <div className="flex-shrink-0">{getIcon()}</div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900">{toast.title}</p>
+          <p className="text-sm font-medium text-stone-900 dark:text-stone-100">{toast.title}</p>
           {toast.message && (
-            <p className="text-sm text-gray-600 mt-1">{toast.message}</p>
+            <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">{toast.message}</p>
           )}
         </div>
         <button
           onClick={handleRemove}
-          className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+          className="flex-shrink-0 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
