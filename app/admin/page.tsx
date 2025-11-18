@@ -16,6 +16,7 @@ import { ResourcesTab } from '@/components/admin/tabs/ResourcesTab';
 import { SponsorsTab } from '@/components/admin/tabs/SponsorsTab';
 import type { Event, RSVP, Photo, BoardMember, Resource, Sponsor } from '@/components/admin/types';
 import AdminCenterToggle from "@/components/admin/AdminCenterToggle";
+import AdminSessionManager from "@/components/admin/AdminSessionManager";
 
 
 export default function AdminPage() {
@@ -876,11 +877,14 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading admin data...</p>
+      <div>
+        <AdminSessionManager />
+        <div className="min-h-screen bg-gray-50 py-12">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading admin data...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -888,27 +892,29 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage events and RSVPs for LASC</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">
-                Logged in as: {user?.email}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
-              >
-                Logout
-              </button>
+    <div>
+      <AdminSessionManager />
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-8">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+                <p className="text-gray-600">Manage events and RSVPs for LASC</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-500">
+                  Logged in as: {user?.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Center Status Toggle */}
         <div className="my-4">
@@ -923,20 +929,20 @@ export default function AdminPage() {
           sponsors={sponsors.length}
         />
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <TabNavigation
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            counts={{
-              events: events.length,
-              rsvps: rsvps.length,
-              photos: photos.length,
-              board: boardMembers.length,
-              resources: resources.length,
-              sponsors: sponsors.length
-            }}
-          />
+          {/* Tab Navigation */}
+          <div className="bg-white rounded-lg shadow mb-6">
+            <TabNavigation
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              counts={{
+                events: events.length,
+                rsvps: rsvps.length,
+                photos: photos.length,
+                board: boardMembers.length,
+                resources: resources.length,
+                sponsors: sponsors.length
+              }}
+            />
 
           <div className="p-6">
             {activeTab === 'events' && (
@@ -1036,6 +1042,7 @@ export default function AdminPage() {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );
