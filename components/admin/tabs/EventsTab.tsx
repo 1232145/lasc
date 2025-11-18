@@ -24,6 +24,7 @@ interface EventsTabProps {
   handleEditEvent: (event: Event) => void;
   handleDeleteEvent: (eventId: string, eventTitle: string) => void;
   handlePageChange: (page: number) => void;
+  closeEventForm: () => void;
   clearForm: () => void;
 }
 
@@ -45,6 +46,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
   handleEditEvent,
   handleDeleteEvent,
   handlePageChange,
+  closeEventForm,
   clearForm
 }) => {
   type SortKey = 'title' | 'description' | 'date' | 'location' | 'capacity' | 'rsvps';
@@ -110,33 +112,16 @@ export const EventsTab: React.FC<EventsTabProps> = ({
         </button>
       </div>
 
-      {editingEvent && (
-        <EventForm
-          isEditing={true}
-          onSubmit={handleUpdateEvent}
-          onCancel={() => {
-            handleEditEvent(null as any);
-            clearForm();
-          }}
-          title={`Edit Event: ${editingEvent.title}`}
-          formData={newEvent}
-          onFormChange={handleFormChange}
-        />
-      )}
-
-      {showCreateEvent && (
-        <EventForm
-          isEditing={false}
-          onSubmit={handleCreateEvent}
-          onCancel={() => {
-            handleCreateNewEvent();
-            clearForm();
-          }}
-          title="Create New Event"
-          formData={newEvent}
-          onFormChange={handleFormChange}
-        />
-      )}
+      {(editingEvent || showCreateEvent) && (
+  <EventForm
+    isEditing={!!editingEvent}
+    formData={newEvent}
+    onFormChange={handleFormChange}
+    onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
+    onCancel={closeEventForm}
+    title={editingEvent ? `Edit Event: ${editingEvent.title}` : 'Create New Event'}
+  />
+)}
 
       {events.length === 0 ? (
         <EmptyState message="No events found." />
