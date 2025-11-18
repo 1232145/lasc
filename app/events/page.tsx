@@ -5,14 +5,16 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage({ searchParams }: any) {
+  // Await searchParams before using its properties
+  const params = await searchParams;
   const now = new Date();
 
   // --- Past events pagination ---
-  const pastPage = searchParams?.pastPage ? parseInt(searchParams.pastPage, 10) : 1;
+  const pastPage = params?.pastPage ? parseInt(params.pastPage, 10) : 1;
   const pastPageSize = 10;
 
   // --- Upcoming events pagination / "view all" ---
-  const viewAllUpcoming = searchParams?.viewAllUpcoming === "true";
+  const viewAllUpcoming = params?.viewAllUpcoming === "true";
   const upcomingPageSize = 100;
 
   // --- Fetch upcoming events ---
@@ -53,29 +55,39 @@ export default async function EventsPage({ searchParams }: any) {
   const pageOptions = Array.from({ length: totalPastPages }, (_, i) => i + 1);
 
   return (
-    <section className="py-16 bg-[var(--background)] min-h-screen">
+    <section className="py-20 bg-[var(--bg-primary)] min-h-screen">
       <div className="max-w-6xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
-          Upcoming Events
-        </h1>
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4 text-[var(--text-primary)] font-serif">
+            Upcoming Events
+          </h1>
+          <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
+            Join us for engaging activities, educational programs, and community gatherings designed for older adults.
+          </p>
+        </div>
 
         {upcomingEvents && upcomingEvents.length > 0 ? (
-          <div className="grid gap-12 md:grid-cols-2 mb-4">
+          <div className="grid gap-8 md:grid-cols-2 mb-8">
             {upcomingEvents.map((event: any) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-600 mb-8">
-            No upcoming events at this time.
-          </p>
+          <div className="text-center py-16">
+            <p className="text-lg text-[var(--text-muted)] mb-4">
+              No upcoming events at this time.
+            </p>
+            <p className="text-base text-[var(--text-muted)]">
+              Check back soon for new community activities and programs!
+            </p>
+          </div>
         )}
 
         {!viewAllUpcoming && upcomingEvents && upcomingEvents.length >= upcomingPageSize && (
-          <div className="text-center mb-8">
+          <div className="text-center mb-12">
             <Link
               href={`/events?viewAllUpcoming=true`}
-              className="inline-block bg-gray-800 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition-colors"
+              className="btn-primary inline-block px-8 py-4 text-lg font-semibold shadow-[var(--shadow-lg)]"
             >
               View All Upcoming Events
             </Link>
@@ -83,32 +95,32 @@ export default async function EventsPage({ searchParams }: any) {
         )}
 
         {pastEvents && pastEvents.length > 0 && (
-          <details className="mt-12" open={searchParams?.pastPage !== undefined}>
-            <summary className="cursor-pointer text-center text-lg font-bold py-3 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
-              Show Past Events
+          <details className="mt-16 card bg-[var(--bg-secondary)] rounded-2xl p-6" open={params?.pastPage !== undefined}>
+            <summary className="cursor-pointer text-center text-xl font-bold py-4 text-[var(--text-accent)] hover:text-[var(--primary-800)] transition-colors font-serif">
+              Browse Past Events
             </summary>
 
-            <div className="grid gap-12 md:grid-cols-2 mt-6">
+            <div className="grid gap-8 md:grid-cols-2 mt-8">
               {pastEvents.map((event: any) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
 
-            <div className="flex justify-center items-center gap-4 mt-6 flex-wrap">
+            <div className="flex justify-center items-center gap-4 mt-8 flex-wrap">
               {pastPage > 1 && (
                 <Link
                   href={`/events?pastPage=${pastPage - 1}`}
-                  className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+                  className="btn-secondary px-6 py-3 text-base font-medium"
                 >
                   Previous
                 </Link>
               )}
 
-              <span className="text-gray-700">
+              <span className="text-[var(--text-secondary)] font-medium px-4 py-2">
                 Page {pastPage} of {totalPastPages}
               </span>
 
-              <form method="get">
+              <form method="get" className="flex items-center gap-3">
                 <label htmlFor="jump-to-page" className="sr-only">
                   Jump to page
                 </label>
@@ -116,7 +128,7 @@ export default async function EventsPage({ searchParams }: any) {
                   id="jump-to-page"
                   name="pastPage"
                   defaultValue={pastPage}
-                  className="border px-3 py-2 rounded-md"
+                  className="border border-[var(--border-primary)] bg-[var(--bg-elevated)] text-[var(--text-primary)] px-4 py-2 rounded-lg focus:ring-2 focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] transition-colors shadow-[var(--shadow-xs)]"
                 >
                   {pageOptions.map((pageNum) => (
                     <option key={pageNum} value={pageNum}>
@@ -126,7 +138,7 @@ export default async function EventsPage({ searchParams }: any) {
                 </select>
                 <button
                   type="submit"
-                  className="ml-2 bg-gray-800 text-white px-3 py-2 rounded-md hover:bg-gray-700 transition-colors"
+                  className="btn-primary px-4 py-2 text-base font-medium"
                 >
                   Go
                 </button>
@@ -135,7 +147,7 @@ export default async function EventsPage({ searchParams }: any) {
               {pastPage < totalPastPages && (
                 <Link
                   href={`/events?pastPage=${pastPage + 1}`}
-                  className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+                  className="btn-secondary px-6 py-3 text-base font-medium"
                 >
                   Next
                 </Link>

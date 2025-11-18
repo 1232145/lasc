@@ -17,15 +17,15 @@ export default async function SponsorshipSection() {
   return (
     <section
       id="sponsorships"
-      className="py-20 bg-gray-50 border-t border-gray-200 scroll-mt-16"
+      className="py-20 bg-amber-50 dark:bg-stone-800 border-t border-orange-200 dark:border-stone-700 scroll-mt-16 transition-colors duration-300"
     >
       <div className="max-w-6xl mx-auto px-6 text-center">
         {/* Header */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-3">
+          <h2 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-3">
             Our Sponsors
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-stone-600 dark:text-stone-400 max-w-2xl mx-auto leading-relaxed">
             The Littlestown Area Senior Center is deeply grateful to our
             sponsors and community partners for their continued support.
           </p>
@@ -37,7 +37,7 @@ export default async function SponsorshipSection() {
             {sponsors.map((sponsor) => (
               <div
                 key={sponsor.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition-shadow"
+                className="card bg-white dark:bg-stone-900 rounded-xl shadow-lg border border-orange-200 dark:border-stone-600 p-6 text-center hover:shadow-xl hover:transform hover:-translate-y-1 transition-all duration-300"
               >
                 {sponsor.logo_url ? (
                   <div className="w-full h-24 relative mb-4">
@@ -49,17 +49,17 @@ export default async function SponsorshipSection() {
                     />
                   </div>
                 ) : (
-                  <div className="h-24 flex items-center justify-center mb-4 text-gray-400 text-sm">
+                  <div className="h-24 flex items-center justify-center mb-4 text-stone-400 dark:text-stone-500 text-sm font-medium">
                     No Logo
                   </div>
                 )}
 
-                <h3 className="font-semibold text-lg text-gray-800 mb-1">
+                <h3 className="font-semibold text-lg text-stone-900 dark:text-stone-100 mb-1">
                   {sponsor.name}
                 </h3>
 
                 {sponsor.description && (
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                  <p className="text-sm text-stone-600 dark:text-stone-400 mb-3 line-clamp-3 leading-relaxed">
                     {sponsor.description}
                   </p>
                 )}
@@ -69,7 +69,7 @@ export default async function SponsorshipSection() {
                     href={sponsor.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    className="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 text-sm font-medium transition-colors"
                   >
                     Visit Website →
                   </a>
@@ -78,19 +78,19 @@ export default async function SponsorshipSection() {
             ))}
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto bg-white border border-gray-100 rounded-xl shadow-sm p-10">
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">
+          <div className="max-w-2xl mx-auto bg-white dark:bg-stone-900 border border-orange-200 dark:border-stone-600 rounded-xl shadow-lg p-10">
+            <h3 className="text-xl font-semibold text-stone-900 dark:text-stone-100 mb-3">
               No sponsors yet
             </h3>
-            <p className="text-gray-600 mb-6">
-              We’re always grateful for community support. If you or your
+            <p className="text-stone-600 dark:text-stone-400 mb-6 leading-relaxed">
+              We're always grateful for community support. If you or your
               organization would like to sponsor the Littlestown Area Senior
               Center, please reach out or visit our Donate page to learn more.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 href="/donate"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-md transition-colors"
+                className="btn-primary bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-medium px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
                 Become a Sponsor
               </Link>

@@ -107,7 +107,7 @@ export default function GalleryClient() {
         <select
           value={selectedYear || "all"}
           onChange={handleFilterChange}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-blue-100"
+          className="border border-orange-300 bg-white text-stone-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors"
         >
           <option value="all">All Years</option>
 
@@ -122,16 +122,16 @@ export default function GalleryClient() {
       {/* Gallery grid */}
 
       {loading && offset === 0 ? (
-        <p className="text-center text-gray-600">Loading photos...</p>
+        <p className="text-center text-stone-600">Loading photos...</p>
       ) : photos.length === 0 ? (
-        <p className="text-center text-gray-600">No photos found.</p>
+        <p className="text-center text-stone-600">No photos found.</p>
       ) : (
         <>
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
             {photos.map((photo) => (
               <div
                 key={photo.id}
-                className="relative group overflow-hidden rounded-xl shadow-md"
+                className="relative group overflow-hidden rounded-xl shadow-lg border border-orange-200 hover:shadow-xl transition-all duration-300"
               >
                 <Image
                   src={photo.image_url}
@@ -141,11 +141,11 @@ export default function GalleryClient() {
                   className="object-cover w-full h-64 transform group-hover:scale-105 transition-transform duration-300"
                 />
 
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all z-10 flex items-end justify-center">
-                  <div className="text-white text-center opacity-0 group-hover:opacity-100 mb-4 px-3 transition-opacity duration-300">
-                    <p className="font-medium">{photo.title}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-orange-900/50 to-orange-900/0 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 flex items-end justify-center">
+                  <div className="text-white text-center mb-4 px-3">
+                    <p className="font-semibold text-lg">{photo.title}</p>
                     {photo.event_title && (
-                      <p className="text-sm opacity-80">{photo.event_title}</p>
+                      <p className="text-sm opacity-90">{photo.event_title}</p>
                     )}
                   </div>
                 </div>
@@ -158,9 +158,9 @@ export default function GalleryClient() {
               <button
                 onClick={handleLoadMore}
                 disabled={loading}
-                className={`px-5 py-2 rounded-md font-medium transition-colors ${loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                className={`btn-primary px-5 py-3 rounded-xl font-medium transition-all duration-300 ${loading
+                    ? "bg-stone-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white transform hover:scale-105 shadow-lg"
                   }`}
               >
                 {loading ? "Loading..." : "Load More"}

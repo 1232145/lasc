@@ -1,46 +1,398 @@
 @import "tailwindcss";
-@import "@fontsource/lora/400.css";
-@import "@fontsource/work-sans/600.css";
-@import "@fontsource/source-sans-3/400.css";
-@import "@fontsource/source-sans-3/600.css";
-@import "@fontsource/merriweather/700.css";
-
-body {
-  font-family: "Merriweather", serif;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-h1,
-h2,
-h3,
-h4 {
-  font-family: "Merriweather", serif;
-  font-weight: 700;
-  color: #1e3a8a;
-}
-
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Enhanced Layered Color Palette for Visual Depth */
+  
+  /* Primary Warm Orange Layers */
+  --primary-25: #fffcf9;
+  --primary-50: #fef7ed;
+  --primary-100: #fdedd3;
+  --primary-200: #fbd9a5;
+  --primary-300: #f8c06d;
+  --primary-400: #f4a233;
+  --primary-500: #f1890b;
+  --primary-600: #e26f05;
+  --primary-700: #bc5508;
+  --primary-800: #96440e;
+  --primary-900: #7c3a0f;
+  --primary-950: #4a1f07;
+  
+  /* Secondary Amber/Honey Layers */
+  --secondary-25: #fffef7;
+  --secondary-50: #fffbeb;
+  --secondary-100: #fef3c7;
+  --secondary-200: #fde68a;
+  --secondary-300: #fcd34d;
+  --secondary-400: #fbbf24;
+  --secondary-500: #f59e0b;
+  --secondary-600: #d97706;
+  --secondary-700: #b45309;
+  --secondary-800: #92400e;
+  --secondary-900: #78350f;
+  --secondary-950: #451a03;
+  
+  /* Warm Coral Accent Layers */
+  --coral-25: #fefcfc;
+  --coral-50: #fef7f7;
+  --coral-100: #feecec;
+  --coral-200: #fdd8d8;
+  --coral-300: #fcb5b5;
+  --coral-400: #f98080;
+  --coral-500: #f56565;
+  --coral-600: #e53e3e;
+  --coral-700: #c53030;
+  --coral-800: #9c2626;
+  --coral-900: #822727;
+  --coral-950: #4a1414;
+  
+  /* Warm Neutral Layers (Stone-based) */
+  --neutral-25: #fefdfb;
+  --neutral-50: #faf9f7;
+  --neutral-100: #f5f4f1;
+  --neutral-200: #e7e5e0;
+  --neutral-300: #d6d3ce;
+  --neutral-400: #a8a29e;
+  --neutral-500: #78716c;
+  --neutral-600: #57534e;
+  --neutral-700: #44403c;
+  --neutral-800: #292524;
+  --neutral-900: #1c1917;
+  --neutral-950: #0c0a09;
+  
+  /* Success Green (warm-tinted) Layers */
+  --success-25: #f7fef8;
+  --success-50: #f0fdf4;
+  --success-100: #dcfce7;
+  --success-200: #bbf7d0;
+  --success-300: #86efac;
+  --success-400: #4ade80;
+  --success-500: #22c55e;
+  --success-600: #16a34a;
+  --success-700: #15803d;
+  --success-800: #166534;
+  --success-900: #14532d;
+  --success-950: #052e16;
+  
+  /* Background Layers for Visual Depth */
+  --bg-primary: var(--neutral-25);
+  --bg-secondary: var(--primary-25);
+  --bg-tertiary: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-surface: var(--neutral-50);
+  --bg-overlay: rgba(252, 211, 77, 0.05);
+  
+  /* Text Colors with Better Contrast */
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-700);
+  --text-tertiary: var(--neutral-600);
+  --text-muted: var(--neutral-500);
+  --text-placeholder: var(--neutral-400);
+  --text-accent: var(--primary-700);
+  --text-success: var(--success-700);
+  --text-warning: var(--secondary-700);
+  --text-error: var(--coral-700);
+  
+  /* Border Colors for Layering */
+  --border-primary: var(--neutral-200);
+  --border-secondary: var(--primary-100);
+  --border-accent: var(--primary-200);
+  --border-focus: var(--primary-400);
+  --border-error: var(--coral-300);
+  --border-success: var(--success-300);
+  
+  /* Shadow Layers for Depth */
+  --shadow-xs: 0 1px 2px 0 rgba(28, 25, 23, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(28, 25, 23, 0.1), 0 1px 2px -1px rgba(28, 25, 23, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(28, 25, 23, 0.1), 0 2px 4px -2px rgba(28, 25, 23, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(28, 25, 23, 0.1), 0 4px 6px -4px rgba(28, 25, 23, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(28, 25, 23, 0.1), 0 8px 10px -6px rgba(28, 25, 23, 0.1);
+  --shadow-warm: 0 8px 25px rgba(188, 85, 8, 0.15);
+  
   color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Enhanced Typography System - Clean Sans-Serif Only */
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: light;
+/* Clean Sans-Serif Headings - Much More Readable */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Work Sans", "Inter", system-ui, sans-serif;
+  color: var(--text-accent);
+  margin: 0 0 0.6em 0;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  transition: color 0.3s ease;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--primary-800);
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 3vw, 2.75rem);
+  font-weight: 700;
+  color: var(--primary-700);
+  letter-spacing: -0.03em;
+}
+
+h3 {
+  font-size: clamp(1.4rem, 2.5vw, 2.1rem);
+  font-weight: 600;
+  color: var(--primary-700);
+  letter-spacing: -0.02em;
+}
+
+h4 {
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  font-weight: 600;
+  color: var(--primary-600);
+}
+
+/* Special font for site branding */
+.brand-text {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Enhanced Button System with Better Typography */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  color: white;
+  padding: 0.875rem 1.75rem;
+  border-radius: 0.875rem;
+  font-family: "Nunito Sans", sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  border: 0;
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-700), var(--secondary-700));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-primary);
+  padding: 0.875rem 1.75rem;
+  border-radius: 0.875rem;
+  font-family: "Nunito Sans", sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-accent);
+  color: var(--text-accent);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--coral-500), var(--coral-600));
+  color: white;
+  padding: 0.875rem 1.75rem;
+  border-radius: 0.875rem;
+  font-family: "Nunito Sans", sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  border: 0;
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-accent:hover {
+  background: linear-gradient(135deg, var(--coral-600), var(--coral-700));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Enhanced Card System with Layered Backgrounds */
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-400), var(--secondary-400), var(--coral-400));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-warm);
+  border-color: var(--border-accent);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card-elevated {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-secondary);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-elevated:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Input and Form Styling with Better Typography */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+textarea,
+select {
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-xs);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-sm), 0 0 0 3px rgba(241, 137, 11, 0.1);
+  background: var(--bg-tertiary);
+}
+
+/* Link Styling with Better Typography */
+a {
+  color: var(--text-accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+a:hover {
+  color: var(--primary-800);
+}
+
+a:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Paragraph and Text Improvements */
+p {
+  margin-bottom: 1.25em;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.lead {
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  font-family: "Inter", sans-serif;
+}
+
+.text-large {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* Better typography for lists */
+ul, ol {
+  font-family: "Inter", sans-serif;
+  line-height: 1.7;
+  margin-bottom: 1.25em;
+}
+
+li {
+  margin-bottom: 0.5em;
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #000000;
+    --text-secondary: #1a1a1a;
+    --border-primary: #666666;
+    --border-focus: #0066cc;
+  }
+}
+
+/* Print styles remain the same as before */
 @media print {
   body.calendar-print * {
     visibility: hidden;
@@ -148,10 +500,4 @@ h4 {
     background: none !important;
     color: inherit !important;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

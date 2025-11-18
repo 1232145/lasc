@@ -16,64 +16,64 @@ interface TabNavigationProps {
 }
 
 export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, counts }) => (
-  <div className="border-b border-gray-200">
-    <nav className="flex space-x-8 px-6">
+  <div className="border-b border-orange-200 dark:border-stone-700">
+    <nav className="flex space-x-8 px-6 overflow-x-auto">
       <button
         onClick={() => onTabChange('events')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'events'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
+            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
         }`}
       >
         Events ({counts.events})
       </button>
       <button
         onClick={() => onTabChange('rsvps')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'rsvps'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
+            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
         }`}
       >
         RSVPs ({counts.rsvps})
       </button>
       <button
         onClick={() => onTabChange('photos')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'photos'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
+            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
         }`}
       >
         Photos ({counts.photos})
       </button>
       <button
         onClick={() => onTabChange('board')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'board'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
+            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
         }`}
       >
         Board ({counts.board})
       </button>
       <button
         onClick={() => onTabChange('resources')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'resources'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
+            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
         }`}
       >
         Resources ({counts.resources})
       </button>
       <button
         onClick={() => onTabChange('sponsors')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'sponsors'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
+            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
         }`}
       >
         Sponsors ({counts.sponsors})
