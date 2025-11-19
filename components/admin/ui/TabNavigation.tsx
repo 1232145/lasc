@@ -16,14 +16,14 @@ interface TabNavigationProps {
 }
 
 export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, counts }) => (
-  <div className="border-b border-orange-200 dark:border-stone-700">
+  <div className="border-b border-orange-200">
     <nav className="flex space-x-8 px-6 overflow-x-auto">
       <button
         onClick={() => onTabChange('events')}
         className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'events'
-            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
-            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Events ({counts.events})
@@ -32,8 +32,8 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
         onClick={() => onTabChange('rsvps')}
         className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'rsvps'
-            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
-            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         RSVPs ({counts.rsvps})
@@ -42,8 +42,8 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
         onClick={() => onTabChange('photos')}
         className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'photos'
-            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
-            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Photos ({counts.photos})
@@ -52,8 +52,8 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
         onClick={() => onTabChange('board')}
         className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'board'
-            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
-            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Board ({counts.board})
@@ -62,8 +62,8 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
         onClick={() => onTabChange('resources')}
         className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'resources'
-            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
-            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Resources ({counts.resources})
@@ -72,8 +72,8 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
         onClick={() => onTabChange('sponsors')}
         className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'sponsors'
-            ? 'border-orange-500 dark:border-orange-400 text-orange-600 dark:text-orange-400'
-            : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Sponsors ({counts.sponsors})

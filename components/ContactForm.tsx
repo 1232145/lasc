@@ -55,7 +55,7 @@ export default function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg p-4 text-green-800 dark:text-green-300 text-center mb-10 font-medium">
+      <div className="bg-green-50 border border-green-300 rounded-lg p-4 text-green-800 text-center mb-10 font-medium">
         ✅ Thanks, {submittedName || "friend"}! Your message has been sent.
       </div>
     );
@@ -64,14 +64,14 @@ export default function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="card bg-white dark:bg-stone-800 shadow-lg rounded-xl p-8 mb-10 max-w-3xl mx-auto border border-orange-200 dark:border-stone-600"
+      className="card bg-white shadow-lg rounded-xl p-8 mb-10 max-w-3xl mx-auto border border-orange-200"
     >
-      <h3 className="text-xl font-semibold text-stone-900 dark:text-stone-100 mb-4 text-center">
+      <h3 className="text-xl font-semibold text-stone-900 mb-4 text-center">
         Send Us a Message
       </h3>
 
       {errorMsg && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-300 text-sm rounded-md p-3 mb-4 text-center font-medium">
+        <div className="bg-red-50 border border-red-300 text-red-800 text-sm rounded-md p-3 mb-4 text-center font-medium">
           {errorMsg}
         </div>
       )}
@@ -84,7 +84,7 @@ export default function ContactForm() {
           onChange={handleChange}
           placeholder="Your Name"
           required
-          className="appearance-none block w-full px-4 py-3 border border-orange-300 dark:border-stone-600 rounded-lg text-stone-900 dark:text-stone-100 placeholder-stone-500 dark:placeholder-stone-400 bg-white dark:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 dark:focus:ring-orange-500 transition-colors"
+          className="appearance-none block w-full px-4 py-3 border border-orange-300 rounded-lg text-stone-900 placeholder-stone-500 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors"
         />
 
         <input
@@ -94,7 +94,7 @@ export default function ContactForm() {
           onChange={handleChange}
           placeholder="you@example.com"
           required
-          className="appearance-none block w-full px-4 py-3 border border-orange-300 dark:border-stone-600 rounded-lg text-stone-900 dark:text-stone-100 placeholder-stone-500 dark:placeholder-stone-400 bg-white dark:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 dark:focus:ring-orange-500 transition-colors"
+          className="appearance-none block w-full px-4 py-3 border border-orange-300 rounded-lg text-stone-900 placeholder-stone-500 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors"
         />
 
         <textarea
@@ -104,7 +104,7 @@ export default function ContactForm() {
           placeholder="Your message..."
           rows={5}
           required
-          className="appearance-none block w-full px-4 py-3 border border-orange-300 dark:border-stone-600 rounded-lg text-stone-900 dark:text-stone-100 placeholder-stone-500 dark:placeholder-stone-400 bg-white dark:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 dark:focus:ring-orange-500 transition-colors resize-vertical"
+          className="appearance-none block w-full px-4 py-3 border border-orange-300 rounded-lg text-stone-900 placeholder-stone-500 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors resize-vertical"
         />
       </div>
 
@@ -113,7 +113,7 @@ export default function ContactForm() {
         disabled={loading}
         className={`btn-primary mt-6 w-full text-white font-medium py-3 rounded-xl transition-all duration-300 ${
           loading
-            ? "bg-stone-400 dark:bg-stone-600 cursor-not-allowed"
+            ? "bg-stone-400 cursor-not-allowed"
             : "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
         }`}
       >
