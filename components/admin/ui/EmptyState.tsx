@@ -5,6 +5,6 @@ interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ message }) => (
-  <p className="text-stone-500 dark:text-stone-400 text-center py-8">{message}</p>
+  <p className="text-stone-500 text-center py-8">{message}</p>
 );
 

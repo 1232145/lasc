@@ -68,7 +68,7 @@ export const SponsorsTab: React.FC<SponsorsTabProps> = ({
   return (
   <div>
     <div className="flex justify-between items-center mb-6 gap-3">
-      <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">Sponsors</h2>
+      <h2 className="text-xl font-semibold text-stone-900">Sponsors</h2>
       <div className="flex-1 hidden md:block" />
       <SearchInput value={query} onChange={setQuery} placeholder="Search sponsors..." />
       <button className="btn-primary bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={openCreateSponsor}>
@@ -102,46 +102,46 @@ export const SponsorsTab: React.FC<SponsorsTabProps> = ({
       <EmptyState message="No sponsors found." />
     ) : (
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-orange-200 dark:divide-stone-700">
-          <thead className="bg-orange-50 dark:bg-stone-800">
+        <table className="min-w-full divide-y divide-orange-200">
+          <thead className="bg-orange-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-stone-600 dark:text-stone-400 uppercase tracking-wider">Logo</th>
-              <SortableHeader label="Name" columnKey="name" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-stone-600 dark:text-stone-400 uppercase tracking-wider" />
-              <SortableHeader label="Description" columnKey="description" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-stone-600 dark:text-stone-400 uppercase tracking-wider" />
-              <SortableHeader label="Website" columnKey="website" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-stone-600 dark:text-stone-400 uppercase tracking-wider" />
-              <th className="px-6 py-3 text-left text-xs font-medium text-stone-600 dark:text-stone-400 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-stone-600 uppercase tracking-wider">Logo</th>
+              <SortableHeader label="Name" columnKey="name" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-stone-600 uppercase tracking-wider" />
+              <SortableHeader label="Description" columnKey="description" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-stone-600 uppercase tracking-wider" />
+              <SortableHeader label="Website" columnKey="website" sort={sort} onChange={setSort} className="px-6 py-3 text-left text-xs font-medium text-stone-600 uppercase tracking-wider" />
+              <th className="px-6 py-3 text-left text-xs font-medium text-stone-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-stone-900 divide-y divide-orange-100 dark:divide-stone-700">
+          <tbody className="bg-white divide-y divide-orange-100">
             {sortedSponsors.map((sponsor) => (
-              <tr key={sponsor.id} className="hover:bg-orange-50 dark:hover:bg-stone-800 transition-colors">
+              <tr key={sponsor.id} className="hover:bg-orange-50 transition-colors">
                 <td className="px-6 py-4">
                   {sponsor.logo_url ? (
                     <img src={sponsor.logo_url} alt={sponsor.name} className="w-16 h-16 object-contain rounded-lg" />
                   ) : (
-                    <div className="w-16 h-16 bg-orange-100 dark:bg-stone-700 rounded-lg flex items-center justify-center text-stone-400 dark:text-stone-500 text-xs font-medium">No Logo</div>
+                    <div className="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center text-stone-400 text-xs font-medium">No Logo</div>
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-stone-900 dark:text-stone-100">{sponsor.name}</div>
+                  <div className="text-sm font-medium text-stone-900">{sponsor.name}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-stone-600 dark:text-stone-400 max-w-lg whitespace-normal max-h-20 overflow-y-auto" style={{ maxHeight: '5rem' }}>
+                  <div className="text-sm text-stone-600 max-w-lg whitespace-normal max-h-20 overflow-y-auto" style={{ maxHeight: '5rem' }}>
                     {sponsor.description || '-'}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   {sponsor.website ? (
-                    <a href={sponsor.website} target="_blank" rel="noopener noreferrer" className="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 text-sm max-w-xs truncate block font-medium transition-colors">
+                    <a href={sponsor.website} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-800 text-sm max-w-xs truncate block font-medium transition-colors">
                       {sponsor.website}
                     </a>
                   ) : (
-                    <span className="text-stone-400 dark:text-stone-500">-</span>
+                    <span className="text-stone-400">-</span>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button onClick={() => handleEditSponsor(sponsor)} className="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 mr-3 cursor-pointer font-medium transition-colors">Edit</button>
-                  <button onClick={() => handleDeleteSponsor(sponsor.id, sponsor.name)} className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 cursor-pointer font-medium transition-colors">Delete</button>
+                  <button onClick={() => handleEditSponsor(sponsor)} className="text-orange-600 hover:text-orange-800 mr-3 cursor-pointer font-medium transition-colors">Edit</button>
+                  <button onClick={() => handleDeleteSponsor(sponsor.id, sponsor.name)} className="text-red-600 hover:text-red-800 cursor-pointer font-medium transition-colors">Delete</button>
                 </td>
               </tr>
             ))}

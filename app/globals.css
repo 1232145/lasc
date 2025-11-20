@@ -398,6 +398,19 @@ li {
     visibility: hidden;
   }
 
+  body.calendar-print .Navbar,
+  body.calendar-print .Footer,
+  body.calendar-print nav,
+  body.calendar-print footer,
+  body.calendar-print .center-closed-popup,
+  body.calendar-print #__next > header,
+  body.calendar-print #__next > footer {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   body.calendar-print section.printable-calendar-section {
     padding: 0 !important;
     min-height: auto !important;
@@ -433,7 +446,7 @@ li {
     max-width: 100%;
     overflow: visible !important;
     transform-origin: top left;
-    transform: scale(0.85) translateX(-50%);
+    transform: scale(0.80) translateX(-50%);
   }
 
   body.calendar-print .fc-col-header {

@@ -35,12 +35,12 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="relative inline-flex items-center justify-center p-2 rounded-lg bg-orange-100 dark:bg-stone-800 hover:bg-orange-200 dark:hover:bg-stone-700 transition-colors duration-200"
+      className="relative inline-flex items-center justify-center p-2 rounded-lg bg-orange-100 hover:bg-orange-200 transition-colors duration-200"
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? (
         <svg
-          className="w-5 h-5 text-orange-600 dark:text-orange-400"
+          className="w-5 h-5 text-orange-600"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
