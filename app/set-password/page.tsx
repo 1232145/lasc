@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function ResetPasswordPage() {
+export default function SetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -19,8 +19,8 @@ export default function ResetPasswordPage() {
     const refresh_token = params.get('refresh_token');
     const type = params.get('type');
 
-    if (type === 'recovery' && access_token && refresh_token) {
-      // Set session for the password reset
+    if (type === 'invite' && access_token && refresh_token) {
+      // Set session for the password setup
       supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
         if (error) setError(error.message);
         else setTokenReady(true);
@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
     }
   }, []);
 
-  const handleReset = async () => {
+  const handleSetPassword = async () => {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) setError(error.message);
     else setSubmitted(true);
@@ -41,15 +41,15 @@ export default function ResetPasswordPage() {
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         {submitted ? (
           <p className="text-green-600 font-medium text-center">
-            Password reset successfully. You can now log in.
+            Password set successfully. You can now log in.
           </p>
         ) : error ? (
           <p className="text-red-600 font-medium text-center">{error}</p>
         ) : !tokenReady ? (
-          <p className="text-gray-500 text-center">Loading reset link...</p>
+          <p className="text-gray-500 text-center">Loading set-password link...</p>
         ) : (
           <>
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Reset Password</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Set Your Password</h2>
             <input
               type="password"
               placeholder="Enter new password"
@@ -58,10 +58,10 @@ export default function ResetPasswordPage() {
               className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-orange-300 focus:border-orange-500 transition-colors"
             />
             <button
-              onClick={handleReset}
+              onClick={handleSetPassword}
               className="w-full bg-orange-600 text-white font-medium py-2 rounded-lg hover:bg-orange-700 transition-colors"
             >
-              Update Password
+              Set Password
             </button>
           </>
         )}
