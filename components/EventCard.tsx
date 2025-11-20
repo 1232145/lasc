@@ -25,11 +25,34 @@ export default function EventCard({ event }: { event: any }) {
     }
 
     setLoading(true);
+
+    // Check if RSVP already exists for this email and event
+    const { data: existingRSVP, error: checkError } = await supabase
+      .from("rsvps")
+      .select("id")
+      .eq("event_id", event.id)
+      .eq("email", form.email.toLowerCase().trim())
+      .maybeSingle();
+
+    if (checkError) {
+      console.error("Error checking for duplicate RSVP:", checkError);
+      setErrorMsg("Something went wrong. Please try again later.");
+      setLoading(false);
+      return;
+    }
+
+    if (existingRSVP) {
+      setErrorMsg("There is already an email subscribed to this event.");
+      setLoading(false);
+      return;
+    }
+
+    // Insert new RSVP
     const { error } = await supabase.from("rsvps").insert([
       {
         event_id: event.id,
         name: form.name,
-        email: form.email,
+        email: form.email.toLowerCase().trim(),
         phone: form.phone || null,
       },
     ]);
@@ -37,7 +60,12 @@ export default function EventCard({ event }: { event: any }) {
 
     if (error) {
       console.error("Supabase insert error:", error.message);
-      setErrorMsg("Something went wrong. Please try again later.");
+      // Check if it's a duplicate constraint error
+      if (error.message.includes("duplicate") || error.code === "23505") {
+        setErrorMsg("There is already an email subscribed to this event.");
+      } else {
+        setErrorMsg("Something went wrong. Please try again later.");
+      }
       return;
     }
 

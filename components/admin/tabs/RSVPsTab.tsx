@@ -1,14 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import { EmptyState } from '../ui/EmptyState';
+import { EmailComposeModal } from '../EmailComposeModal';
 import type { RSVP } from '../types';
+import { Mail } from 'lucide-react';
 
 interface RSVPsTabProps {
   rsvps: RSVP[];
+  onEmailSent?: () => void;
 }
 
-export const RSVPsTab: React.FC<RSVPsTabProps> = ({ rsvps }) => {
+export const RSVPsTab: React.FC<RSVPsTabProps> = ({ rsvps, onEmailSent }) => {
   const [eventSort, setEventSort] = useState<'asc' | 'desc'>('asc');
   const [rsvpSort, setRsvpSort] = useState<'asc' | 'desc'>('desc');
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<{ eventId: string; eventTitle: string; recipientCount: number } | null>(null);
 
   const grouped = useMemo(() => {
     const map = new Map<string, { eventId: string; eventTitle: string; eventDate: string | null; rsvps: RSVP[] }>();
@@ -44,6 +49,53 @@ export const RSVPsTab: React.FC<RSVPsTabProps> = ({ rsvps }) => {
 
     return groups;
   }, [rsvps, eventSort, rsvpSort]);
+
+  const handleSendEmail = async (subject: string, body: string) => {
+    if (!selectedEvent) return;
+
+    const response = await fetch('/api/send-event-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        eventId: selectedEvent.eventId,
+        subject,
+        body,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to send emails. Please try again.');
+    }
+
+    // Handle partial success (some emails sent, some failed)
+    if (!data.success && data.successCount > 0) {
+      throw new Error(`Partially sent: ${data.successCount} email(s) sent successfully, ${data.failureCount} failed.`);
+    }
+
+    // Complete failure
+    if (!data.success) {
+      throw new Error(data.error || `Failed to send emails. ${data.failureCount || 0} failed.`);
+    }
+
+    // Success - all emails sent
+    if (onEmailSent) {
+      onEmailSent();
+    }
+  };
+
+  const openEmailModal = (eventId: string, eventTitle: string, recipientCount: number) => {
+    setSelectedEvent({ eventId, eventTitle, recipientCount });
+    setEmailModalOpen(true);
+  };
+
+  const closeEmailModal = () => {
+    setEmailModalOpen(false);
+    setSelectedEvent(null);
+  };
 
   return (
     <div>
@@ -90,8 +142,19 @@ export const RSVPsTab: React.FC<RSVPsTabProps> = ({ rsvps }) => {
                     {group.eventDate ? new Date(`${group.eventDate}T00:00:00`).toLocaleDateString() : 'TBD'}
                   </div>
                 </div>
-                <div className="text-sm text-gray-700">
-                  {group.rsvps.length} RSVP{group.rsvps.length === 1 ? '' : 's'}
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-gray-700">
+                    {group.rsvps.length} RSVP{group.rsvps.length === 1 ? '' : 's'}
+                  </div>
+                  {group.rsvps.length > 0 && (
+                    <button
+                      onClick={() => openEmailModal(group.eventId, group.eventTitle, group.rsvps.length)}
+                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer text-sm font-medium transition-colors"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Send Email
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -120,6 +183,16 @@ export const RSVPsTab: React.FC<RSVPsTabProps> = ({ rsvps }) => {
             </div>
           ))}
         </div>
+      )}
+
+      {selectedEvent && (
+        <EmailComposeModal
+          isOpen={emailModalOpen}
+          onClose={closeEmailModal}
+          onSend={handleSendEmail}
+          eventTitle={selectedEvent.eventTitle}
+          recipientCount={selectedEvent.recipientCount}
+        />
       )}
     </div>
   );
