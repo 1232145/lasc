@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -8,21 +8,22 @@ const supabase = createClient(
 
 export async function POST(request: Request) {
   try {
-    const { email, password, role } = await request.json();
+    const { email, role } = await request.json(); // password removed because invite doesn't use it
 
-    if (!email || !password || !role) {
+    if (!email || !role) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // 1. Create the user in Supabase Auth
-    const { data, error: createUserError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // skip email confirmation for admin-created users
+    // 1. Create the user in Supabase Auth via invite
+    // This sends a magic-link email allowing the user to set a password
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const redirectTo = `${siteUrl}/set-password`;
+    const { data, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
+      redirectTo
     });
 
-    if (createUserError) {
-      return NextResponse.json({ error: createUserError.message }, { status: 400 });
+    if (inviteError) {
+      return NextResponse.json({ error: inviteError.message }, { status: 400 });
     }
 
     if (!data || !data.user) {
@@ -40,7 +41,9 @@ export async function POST(request: Request) {
       // Attempt to delete the created user to keep DB consistent
       await supabase.auth.admin.deleteUser(newUserId);
 
-      return NextResponse.json({ error: `User created but failed to assign role: ${roleError.message}` }, { status: 500 });
+      return NextResponse.json({
+        error: `User created but failed to assign role: ${roleError.message}`,
+      }, { status: 500 });
     }
 
     return NextResponse.json({ message: "User created", user: data.user });

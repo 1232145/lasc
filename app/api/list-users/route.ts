@@ -27,6 +27,8 @@ export async function GET() {
           id: user.id,
           email: user.email,
           role: roleData?.role || "admin", // default to admin if not set
+          created_at: user.created_at,
+          last_sign_in_at: user.last_sign_in_at
         };
       })
     );
