@@ -45,33 +45,33 @@ const ToastComponent = ({ toast, onRemove }: ToastProps) => {
   const getIcon = () => {
     switch (toast.type) {
       case "success":
-        return <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />;
+        return <CheckCircle className="w-5 h-5 text-emerald-600" />;
       case "error":
-        return <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />;
+        return <XCircle className="w-5 h-5 text-amber-600" />;
       case "info":
-        return <Info className="w-5 h-5 text-orange-600 dark:text-orange-400" />;
+        return <Info className="w-5 h-5 text-blue-600" />;
       default:
-        return <XCircle className="w-5 h-5 text-stone-500 dark:text-stone-400" />;
+        return <XCircle className="w-5 h-5 text-slate-500" />;
     }
   };
 
   const getBackgroundColor = () => {
     switch (toast.type) {
       case "success":
-        return "bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700";
+        return "bg-emerald-50 border-emerald-200";
       case "error":
-        return "bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700";
+        return "bg-amber-50 border-amber-200";
       case "info":
-        return "bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-700";
+        return "bg-blue-50 border-blue-200";
       default:
-        return "bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700";
+        return "bg-slate-50 border-slate-200";
     }
   };
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 max-w-sm w-full transform transition-all duration-300 ease-in-out ${
-        isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+      className={`max-w-sm w-full transform transition-all duration-300 ease-in-out ${
+        isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
       }`}
     >
       <div
@@ -79,14 +79,14 @@ const ToastComponent = ({ toast, onRemove }: ToastProps) => {
       >
         <div className="flex-shrink-0">{getIcon()}</div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-stone-900 dark:text-stone-100">{toast.title}</p>
+          <p className="text-sm font-medium text-slate-800">{toast.title}</p>
           {toast.message && (
-            <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">{toast.message}</p>
+            <p className="text-sm text-slate-600 mt-1">{toast.message}</p>
           )}
         </div>
         <button
           onClick={handleRemove}
-          className="flex-shrink-0 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+          className="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

@@ -23,7 +23,7 @@ export default function RootLayout({
           <ConfirmationProvider>
             <Navbar />
             <CenterClosedPopup />
-            <main className="min-h-screen">{children}</main>
+            <main>{children}</main>
             <Footer />
           </ConfirmationProvider>
         </ToastProvider>
