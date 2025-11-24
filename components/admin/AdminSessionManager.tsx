@@ -16,12 +16,11 @@ export default function AdminSessionManager() {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (!data.session && pathname !== "/admin/login") {
-        showError("Not logged in", "Please log in to access the admin panel.");
         router.push("/admin/login");
       }
     };
     checkSession();
-  }, [pathname, router, showError]);
+  }, [pathname, router]);
 
   // 🔄 2. Cross-tab and auth change detection
   useEffect(() => {
