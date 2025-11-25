@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
+export const runtime = "nodejs"; // switch from edge
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,9 +9,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing SUPABASE_SERVICE_ROLE_KEY" }, { status: 500 });
     }
 
-    const results: { task: string; status: number; body: string }[] = [];
+    const results: { task: string; status: number }[] = [];
 
-    // Always run: reset-center-status
+    // Always run reset-center-status
     const resetRes = await fetch(
       "https://biymlkhzjdwablqvkcma.supabase.co/functions/v1/reset-center-status",
       {
@@ -22,25 +22,19 @@ export async function POST(req: NextRequest) {
         },
       }
     );
-    const resetText = await resetRes.text();
-    results.push({ task: "reset-center-status", status: resetRes.status, body: resetText });
+    results.push({ task: "reset-center-status", status: resetRes.status });
 
-    // Check if today is Monday (0=Sunday, 1=Monday, …)
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    if (dayOfWeek === 1) {
-      // Only run cleanup-images on Mondays
+    // Check if today is Monday (America/New_York)
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+    if (now.getDay() === 1) {
       const cleanupRes = await fetch(
         "https://biymlkhzjdwablqvkcma.supabase.co/functions/v1/cleanup-images",
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-          },
+          headers: { Authorization: `Bearer ${SUPABASE_KEY}` },
         }
       );
-      const cleanupText = await cleanupRes.text();
-      results.push({ task: "cleanup-images", status: cleanupRes.status, body: cleanupText });
+      results.push({ task: "cleanup-images", status: cleanupRes.status });
     }
 
     return NextResponse.json({ success: true, results });
