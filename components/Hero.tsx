@@ -1,7 +1,7 @@
 // components/Hero.tsx
+import { readdir } from 'fs/promises';
 import Image from "next/image";
 import Link from "next/link";
-import { readdir } from 'fs/promises';
 import path from 'path';
 
 // Function to get all hero images dynamically
@@ -94,10 +94,6 @@ export default async function Hero() {
         </div>
       </div>
 
-      {/* Debug info - remove in production */}
-      <div className="absolute bottom-4 left-4 text-white/70 text-sm bg-black/50 px-3 py-1 rounded">
-        {heroImages.length} images • {gridSize}x{Math.ceil(gridSize * 0.7)} grid • {totalTiles} tiles
-      </div>
     </section>
   );
 }
