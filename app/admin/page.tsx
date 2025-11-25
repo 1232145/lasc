@@ -50,7 +50,6 @@ export default function AdminPage() {
     title: '',
     description: '',
     event_title: '',
-    year: '',
     taken_at: '',
     image_url: ''
   });
@@ -430,7 +429,6 @@ export default function AdminPage() {
     try {
       const { error } = await supabase.from('photos').insert([{
         ...newPhoto,
-        year: newPhoto.year ? parseInt(newPhoto.year) : null,
         taken_at: newPhoto.taken_at || null
       }]);
 
@@ -440,7 +438,7 @@ export default function AdminPage() {
         return;
       }
 
-      setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+      setNewPhoto({ title: '', description: '', event_title: '', taken_at: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Photo added successfully!');
     } catch (err) {
@@ -455,7 +453,6 @@ export default function AdminPage() {
       title: photo.title,
       description: photo.description || '',
       event_title: photo.event_title || '',
-      year: photo.year?.toString() || '',
       taken_at: photo.taken_at?.split('T')[0] || '',
       image_url: photo.image_url || ''
     });
@@ -470,7 +467,6 @@ export default function AdminPage() {
         .from('photos')
         .update({
           ...newPhoto,
-          year: newPhoto.year ? parseInt(newPhoto.year) : null,
           taken_at: newPhoto.taken_at || null
         })
         .eq('id', editingPhoto.id);
@@ -482,7 +478,7 @@ export default function AdminPage() {
       }
 
       setEditingPhoto(null);
-      setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+      setNewPhoto({ title: '', description: '', event_title: '', taken_at: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Photo updated successfully!');
     } catch (err) {
@@ -878,13 +874,13 @@ export default function AdminPage() {
   
   const openCreatePhoto = () => {
     setEditingPhoto(null);
-    setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+    setNewPhoto({ title: '', description: '', event_title: '', taken_at: '', image_url: '' });
     setShowCreatePhoto(true);
   };
 
   const closePhotoForm = () => {
     setEditingPhoto(null);
-    setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+    setNewPhoto({ title: '', description: '', event_title: '', taken_at: '', image_url: '' });
     setShowCreatePhoto(false);
   };
 

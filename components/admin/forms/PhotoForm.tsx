@@ -12,7 +12,6 @@ interface PhotoFormProps {
     title: string;
     description: string;
     event_title: string;
-    year: string;
     taken_at: string;
     image_url: string;
   };
@@ -45,15 +44,6 @@ export const PhotoForm: React.FC<PhotoFormProps> = ({
             value={formData.event_title}
             onChange={(value) => onFormChange('event_title', value)}
             placeholder="Associated event (if any)"
-          />
-        </FormField>
-        <FormField label="Year">
-          <TextInput
-            type="number"
-            value={formData.year}
-            onChange={(value) => onFormChange('year', value)}
-            placeholder="e.g. 2025"
-            className="[&::-webkit-inner-spin-button]:appearance-none"
           />
         </FormField>
         <FormField label="Taken At">

@@ -17,18 +17,30 @@ export default function GalleryClient() {
   const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
 
-  // fetch distinct years once
+  // fetch distinct years from photo dates automatically
   useEffect(() => {
     async function fetchYears() {
       const { data, error } = await supabase
         .from("photos")
-        .select("year")
-        .order("year", { ascending: false });
+        .select("taken_at, created_at")
+        .order("taken_at", { ascending: false });
 
       if (!error && data) {
         const uniqueYears = Array.from(
-          new Set(data.map((p) => p.year).filter(Boolean))
-        );
+          new Set(
+            data
+              .map((photo) => {
+                // Use taken_at if available, otherwise fall back to created_at
+                const dateToUse = photo.taken_at || photo.created_at;
+                if (dateToUse) {
+                  return new Date(dateToUse).getFullYear();
+                }
+                return null;
+              })
+              .filter((year) => year !== null)
+          )
+        ).sort((a, b) => b - a); // Sort descending (newest first)
+        
         setYears(uniqueYears);
       }
     }
@@ -41,13 +53,21 @@ export default function GalleryClient() {
     async function fetchPhotos() {
       setLoading(true);
 
-      const query = supabase
+      let query = supabase
         .from("photos")
         .select("*")
         .order("taken_at", { ascending: false })
         .range(offset, offset + LIMIT - 1);
 
-      if (selectedYear) query.eq("year", selectedYear);
+      // Filter by year extracted from date fields
+      if (selectedYear) {
+        const yearStart = `${selectedYear}-01-01`;
+        const yearEnd = `${selectedYear}-12-31`;
+        
+        query = query.or(
+          `taken_at.gte.${yearStart},taken_at.lte.${yearEnd},and(taken_at.is.null,created_at.gte.${yearStart},created_at.lte.${yearEnd})`
+        );
+      }
 
       const { data, error } = await query;
 
