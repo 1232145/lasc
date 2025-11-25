@@ -514,6 +514,33 @@ export default function AdminPage() {
     }
   };
 
+  const handleBatchPhotoUpload = async (photos: Array<{
+    title: string;
+    description: string;
+    event_title: string;
+    taken_at: string;
+    image_url: string;
+  }>) => {
+    try {
+      const { error } = await supabase.from('photos').insert(photos.map(photo => ({
+        ...photo,
+        taken_at: photo.taken_at || null
+      })));
+
+      if (error) {
+        console.error('Error batch uploading photos:', error);
+        showError('Error', 'Failed to save some photos. Please try again.');
+        return;
+      }
+
+      fetchData();
+      showSuccess('Success', `Successfully uploaded ${photos.length} photo${photos.length !== 1 ? 's' : ''}!`);
+    } catch (err) {
+      console.error('Error batch uploading photos:', err);
+      showError('Error', 'Failed to save photos. Please try again.');
+    }
+  };
+
   const handleCreateBoardMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBoardMember.name || !newBoardMember.role) {
@@ -1035,6 +1062,7 @@ export default function AdminPage() {
                 handlePhotoFormChange={handlePhotoFormChange}
                 handleUpdatePhoto={handleUpdatePhoto}
                 handleCreatePhoto={handleCreatePhoto}
+                handleBatchPhotoUpload={handleBatchPhotoUpload}
                 handleEditPhoto={handleEditPhoto}
                 handleDeletePhoto={handleDeletePhoto}
                 setSortPhotosBy={setSortPhotosBy}
