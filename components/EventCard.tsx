@@ -11,6 +11,13 @@ export default function EventCard({ event }: { event: any }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // >>> TIMEZONE-SAFE DATE CHECK (minimal addition)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const eventDate = event.date ? new Date(event.date + "T00:00:00") : null;
+  const isPastEvent = eventDate ? eventDate < today : false;
+  // <<< END INSERT
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -19,20 +26,35 @@ export default function EventCard({ event }: { event: any }) {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!form.name || !form.email) {
+    // >>> UPDATED VALIDATION (minimal change)
+    if (!form.name) {
       setErrorMsg("Please fill out all required fields.");
       return;
     }
+    if (!form.email && !form.phone) {
+      setErrorMsg("Please provide at least an email or a phone number.");
+      return;
+    }
+    // <<< END UPDATE
 
     setLoading(true);
 
     // Check if RSVP already exists for this email and event
-    const { data: existingRSVP, error: checkError } = await supabase
-      .from("rsvps")
-      .select("id")
-      .eq("event_id", event.id)
-      .eq("email", form.email.toLowerCase().trim())
-      .maybeSingle();
+    let existingRSVP = null;
+    let checkError = null;
+
+    // >>> ONLY check duplicates if email was provided
+    if (form.email) {
+      const result = await supabase
+        .from("rsvps")
+        .select("id")
+        .eq("event_id", event.id)
+        .eq("email", form.email.toLowerCase().trim())
+        .maybeSingle();
+      existingRSVP = result.data;
+      checkError = result.error;
+    }
+    // <<< END UPDATE
 
     if (checkError) {
       console.error("Error checking for duplicate RSVP:", checkError);
@@ -52,7 +74,7 @@ export default function EventCard({ event }: { event: any }) {
       {
         event_id: event.id,
         name: form.name,
-        email: form.email.toLowerCase().trim(),
+        email: form.email ? form.email.toLowerCase().trim() : null,
         phone: form.phone || null,
       },
     ]);
@@ -73,7 +95,7 @@ export default function EventCard({ event }: { event: any }) {
     setForm({ name: "", email: "", phone: "" });
     setTimeout(() => setSubmitted(false), 5000);
   };
-  
+
   const formatTime = (timeString: string) => {
     const [hours, minutes] = timeString.split(":").map(Number);
     const date = new Date();
@@ -103,10 +125,10 @@ export default function EventCard({ event }: { event: any }) {
       <p className="text-[var(--text-secondary)] mb-2 text-lg font-medium">
         {event.date
           ? new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          })
           : "Date TBD"}
       </p>
 
@@ -127,7 +149,7 @@ export default function EventCard({ event }: { event: any }) {
       </p>
 
       {/* RSVP section */}
-      {!open && !submitted && (
+      {!isPastEvent && !open && !submitted && (
         <button
           onClick={() => setOpen(true)}
           className="btn-primary w-full text-white font-semibold py-3 rounded-xl text-lg shadow-[var(--shadow-lg)]"
@@ -136,7 +158,7 @@ export default function EventCard({ event }: { event: any }) {
         </button>
       )}
 
-      {open && !submitted && (
+      {!isPastEvent && open && !submitted && (
         <form
           onSubmit={handleSubmit}
           className="mt-6 bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-secondary)] shadow-[var(--shadow-xs)]"
@@ -160,29 +182,30 @@ export default function EventCard({ event }: { event: any }) {
               name="email"
               value={form.email}
               onChange={handleChange}
-              placeholder="Email *"
+              placeholder="Email"
               className="border-[var(--border-primary)] bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] transition-colors shadow-[var(--shadow-xs)]"
-              required
             />
             <input
               type="tel"
               name="phone"
               value={form.phone}
               onChange={handleChange}
-              placeholder="Phone (optional)"
+              placeholder="Phone"
               className="border-[var(--border-primary)] bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] transition-colors shadow-[var(--shadow-xs)]"
             />
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+              Please provide at least an email or phone number.
+            </p>
           </div>
 
           <div className="flex gap-4 mt-6">
             <button
               type="submit"
               disabled={loading}
-              className={`btn-primary flex-1 text-white font-medium py-3 rounded-xl text-base transition-all duration-300 ${
-                loading
+              className={`btn-primary flex-1 text-white font-medium py-3 rounded-xl text-base transition-all duration-300 ${loading
                   ? "bg-[var(--neutral-400)] cursor-not-allowed opacity-60"
                   : "shadow-[var(--shadow-md)]"
-              }`}
+                }`}
             >
               {loading ? "Submitting..." : "Submit RSVP"}
             </button>
