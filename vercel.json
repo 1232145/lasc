@@ -2,9 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/daily-tasks",
-      "schedule": "0 0 * * *",
-      "timezone": "America/New_York",
-      "method": "POST"
+      "schedule": "0 0 * * *"
     }
   ]
 }
