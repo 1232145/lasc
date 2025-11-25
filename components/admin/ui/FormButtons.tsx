@@ -17,7 +17,7 @@ export const FormButtons: React.FC<FormButtonsProps> = ({
     <button
       type="button"
       onClick={onCancel}
-      className="btn-secondary px-4 py-2 border-2 border-orange-300 dark:border-stone-600 rounded-lg text-stone-700 dark:text-stone-300 bg-white dark:bg-stone-800 hover:bg-orange-50 dark:hover:bg-stone-700 hover:border-orange-400 dark:hover:border-stone-500 cursor-pointer transition-all duration-300"
+      className="btn-secondary px-4 py-2 border-2 border-orange-300 rounded-lg text-stone-700 bg-white hover:bg-orange-50 hover:border-orange-400 cursor-pointer transition-all duration-300"
     >
       {cancelLabel}
     </button>
