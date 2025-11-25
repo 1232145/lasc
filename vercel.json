@@ -1,7 +1,6 @@
 {
   "crons": [
     {
-      "name": "daily-cron-tasks",
       "path": "/api/cron/daily-tasks",
       "schedule": "0 0 * * *",
       "timezone": "America/New_York",
