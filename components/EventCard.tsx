@@ -11,6 +11,13 @@ export default function EventCard({ event }: { event: any }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // >>> TIMEZONE-SAFE DATE CHECK (minimal addition)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const eventDate = event.date ? new Date(event.date + "T00:00:00") : null;
+  const isPastEvent = eventDate ? eventDate < today : false;
+  // <<< END INSERT
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -127,7 +134,7 @@ export default function EventCard({ event }: { event: any }) {
       </p>
 
       {/* RSVP section */}
-      {!open && !submitted && (
+      {!isPastEvent && !open && !submitted && (
         <button
           onClick={() => setOpen(true)}
           className="btn-primary w-full text-white font-semibold py-3 rounded-xl text-lg shadow-[var(--shadow-lg)]"
@@ -136,7 +143,7 @@ export default function EventCard({ event }: { event: any }) {
         </button>
       )}
 
-      {open && !submitted && (
+      {!isPastEvent && open && !submitted && (
         <form
           onSubmit={handleSubmit}
           className="mt-6 bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-secondary)] shadow-[var(--shadow-xs)]"
