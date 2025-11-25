@@ -2,14 +2,14 @@
   "crons": [
     {
       "name": "cleanup-images",
-      "url": "https://lasc-sage.vercel.app/api/cron/cleanup-images",
+      "path": "/api/cron/cleanup-images",
       "schedule": "0 1 * * 1",
       "timezone": "America/New_York",
       "method": "POST"
     },
     {
       "name": "reset-center-status",
-      "url": "https://lasc-sage.vercel.app/api/cron/reset-center-status",
+      "path": "/api/cron/reset-center-status",
       "schedule": "0 0 * * *",
       "timezone": "America/New_York",
       "method": "POST"
