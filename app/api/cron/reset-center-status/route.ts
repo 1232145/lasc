@@ -1,71 +1,28 @@
-import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServerClient";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: Request) {
-  // Verify this is called from Vercel Cron (optional security check)
-  // If CRON_SECRET is set, require it; otherwise allow (Vercel Cron is already protected)
-  if (process.env.CRON_SECRET) {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
+export const runtime = "edge"; // optional
 
+export async function POST(req: NextRequest) {
   try {
-    // --- EST midnight calculation ---
-    const now = new Date();
-    
-    // Convert UTC to EST/EDT automatically
-    // 'America/New_York' accounts for DST
-    const estTime = now.toLocaleString("en-US", {
-      timeZone: "America/New_York",
-    });
-    const estDate = new Date(estTime);
-
-    // Only reset if current hour is midnight EST
-    if (estDate.getHours() !== 0) {
-      return NextResponse.json({
-        success: false,
-        message: "Not midnight EST, skipping reset",
-        estHour: estDate.getHours(),
-      });
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!SUPABASE_KEY) {
+      return NextResponse.json({ error: "Missing SUPABASE_SERVICE_ROLE_KEY" }, { status: 500 });
     }
 
-    // Update the center_status and message rows
-    const { data, error } = await supabaseServer
-      .from("center_status")
-      .update({
-        is_closed: false,
-        message: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", 1); // your single-row ID
-
-    if (error) {
-      console.error("Error updating center_status:", error.message);
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 500 }
-      );
-    }
-
-    console.log("Successfully reset center_status:", data);
-    return NextResponse.json({
-      success: true,
-      data,
-    });
-  } catch (error: any) {
-    console.error("Unexpected error:", error);
-    return NextResponse.json(
+    const res = await fetch(
+      "https://biymlkhzjdwablqvkcma.supabase.co/functions/v1/reset-center-status",
       {
-        success: false,
-        error: error.message || "Unknown error",
-      },
-      { status: 500 }
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
     );
+
+    const text = await res.text();
+    return NextResponse.json({ status: res.status, body: text });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
-
