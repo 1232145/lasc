@@ -22,22 +22,17 @@ export default function GalleryClient() {
   const [hasMore, setHasMore] = useState(true);
 
   // fetch distinct years once
-
   useEffect(() => {
     async function fetchYears() {
       const { data, error } = await supabase
-
         .from("photos")
-
         .select("year")
-
         .order("year", { ascending: false });
 
       if (!error && data) {
         const uniqueYears = Array.from(
           new Set(data.map((p) => p.year).filter(Boolean))
         );
-
         setYears(uniqueYears);
       }
     }
@@ -46,19 +41,14 @@ export default function GalleryClient() {
   }, []);
 
   // fetch photos (runs whenever selectedYear or offset changes)
-
   useEffect(() => {
     async function fetchPhotos() {
       setLoading(true);
 
       const query = supabase
-
         .from("photos")
-
         .select("*")
-
         .order("taken_at", { ascending: false })
-
         .range(offset, offset + LIMIT - 1);
 
       if (selectedYear) query.eq("year", selectedYear);
@@ -67,9 +57,7 @@ export default function GalleryClient() {
 
       if (error) {
         console.error("Supabase fetch error:", error.message);
-
         setLoading(false);
-
         return;
       }
 
@@ -80,7 +68,6 @@ export default function GalleryClient() {
       }
 
       setHasMore(data.length === LIMIT);
-
       setLoading(false);
     }
 
@@ -93,24 +80,20 @@ export default function GalleryClient() {
 
   function handleFilterChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const year = e.target.value === "all" ? null : Number(e.target.value);
-
     setSelectedYear(year);
-
     setOffset(0);
   }
 
   return (
     <>
       {/* Year filter */}
-
       <div className="flex justify-center mb-8">
         <select
           value={selectedYear || "all"}
           onChange={handleFilterChange}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-blue-100"
+          className="border border-orange-300 bg-white text-stone-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors"
         >
           <option value="all">All Years</option>
-
           {years.map((year) => (
             <option key={year} value={year}>
               {year}
@@ -120,32 +103,37 @@ export default function GalleryClient() {
       </div>
 
       {/* Gallery grid */}
-
       {loading && offset === 0 ? (
-        <p className="text-center text-gray-600">Loading photos...</p>
+        <p className="text-center text-stone-600">Loading photos...</p>
       ) : photos.length === 0 ? (
-        <p className="text-center text-gray-600">No photos found.</p>
+        <p className="text-center text-stone-600">No photos found.</p>
       ) : (
         <>
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
             {photos.map((photo) => (
               <div
                 key={photo.id}
-                className="relative group overflow-hidden rounded-xl shadow-md"
+                className="relative group overflow-hidden rounded-xl shadow-lg border border-orange-200 hover:shadow-xl transition-all duration-300"
               >
-                <Image
-                  src={photo.image_url}
-                  alt={photo.title}
-                  width={600}
-                  height={400}
-                  className="object-cover w-full h-64 transform group-hover:scale-105 transition-transform duration-300"
-                />
+                {photo.image_url ? (
+                  <Image
+                    src={photo.image_url}
+                    alt={photo.title}
+                    width={600}
+                    height={400}
+                    className="object-cover w-full h-64 transform group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-64 bg-gray-200 flex items-center justify-center text-stone-500 rounded-xl">
+                    No Image
+                  </div>
+                )}
 
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all z-10 flex items-end justify-center">
-                  <div className="text-white text-center opacity-0 group-hover:opacity-100 mb-4 px-3 transition-opacity duration-300">
-                    <p className="font-medium">{photo.title}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-orange-900/50 to-orange-900/0 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 flex items-end justify-center">
+                  <div className="text-white text-center mb-4 px-3">
+                    <p className="font-semibold text-lg">{photo.title}</p>
                     {photo.event_title && (
-                      <p className="text-sm opacity-80">{photo.event_title}</p>
+                      <p className="text-sm opacity-90">{photo.event_title}</p>
                     )}
                   </div>
                 </div>
@@ -158,10 +146,11 @@ export default function GalleryClient() {
               <button
                 onClick={handleLoadMore}
                 disabled={loading}
-                className={`px-5 py-2 rounded-md font-medium transition-colors ${loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                  }`}
+                className={`btn-primary px-5 py-3 rounded-xl font-medium transition-all duration-300 ${
+                  loading
+                    ? "bg-stone-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white transform hover:scale-105 shadow-lg"
+                }`}
               >
                 {loading ? "Loading..." : "Load More"}
               </button>

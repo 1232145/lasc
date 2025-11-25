@@ -5,9 +5,9 @@ import ToastComponent, { Toast, ToastType } from "@/components/Toast";
 
 interface ToastContextType {
   showToast: (type: ToastType, title: string, message?: string, duration?: number) => void;
-  showSuccess: (title: string, message?: string) => void;
-  showError: (title: string, message?: string) => void;
-  showInfo: (title: string, message?: string) => void;
+  showSuccess: (title: string, message?: string, duration?: number) => void;
+  showError: (title: string, message?: string, duration?: number) => void;
+  showInfo: (title: string, message?: string, duration?: number) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -42,23 +42,24 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     []
   );
 
+  // ✅ Updated helper functions to support duration
   const showSuccess = useCallback(
-    (title: string, message?: string) => {
-      showToast("success", title, message);
+    (title: string, message?: string, duration?: number) => {
+      showToast("success", title, message, duration);
     },
     [showToast]
   );
 
   const showError = useCallback(
-    (title: string, message?: string) => {
-      showToast("error", title, message);
+    (title: string, message?: string, duration?: number) => {
+      showToast("error", title, message, duration);
     },
     [showToast]
   );
 
   const showInfo = useCallback(
-    (title: string, message?: string) => {
-      showToast("info", title, message);
+    (title: string, message?: string, duration?: number) => {
+      showToast("info", title, message, duration);
     },
     [showToast]
   );
@@ -66,9 +67,13 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ToastContext.Provider value={{ showToast, showSuccess, showError, showInfo }}>
       {children}
-      {toasts.map((toast) => (
-        <ToastComponent key={toast.id} toast={toast} onRemove={removeToast} />
-      ))}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 pointer-events-none">
+        {toasts.map((toast) => (
+          <div key={toast.id} className="pointer-events-auto">
+            <ToastComponent toast={toast} onRemove={removeToast} />
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   );
 };

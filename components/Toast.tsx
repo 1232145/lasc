@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, XCircle, X } from "lucide-react";
+import { CheckCircle, XCircle, X, Info } from "lucide-react";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -45,33 +45,33 @@ const ToastComponent = ({ toast, onRemove }: ToastProps) => {
   const getIcon = () => {
     switch (toast.type) {
       case "success":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-emerald-600" />;
       case "error":
-        return <XCircle className="w-5 h-5 text-red-500" />;
+        return <XCircle className="w-5 h-5 text-amber-600" />;
       case "info":
-        return <XCircle className="w-5 h-5 text-blue-500" />;
+        return <Info className="w-5 h-5 text-blue-600" />;
       default:
-        return <XCircle className="w-5 h-5 text-gray-500" />;
+        return <XCircle className="w-5 h-5 text-slate-500" />;
     }
   };
 
   const getBackgroundColor = () => {
     switch (toast.type) {
       case "success":
-        return "bg-green-50 border-green-200";
+        return "bg-emerald-50 border-emerald-200";
       case "error":
-        return "bg-red-50 border-red-200";
+        return "bg-amber-50 border-amber-200";
       case "info":
         return "bg-blue-50 border-blue-200";
       default:
-        return "bg-gray-50 border-gray-200";
+        return "bg-slate-50 border-slate-200";
     }
   };
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 max-w-sm w-full transform transition-all duration-300 ease-in-out ${
-        isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+      className={`max-w-sm w-full transform transition-all duration-300 ease-in-out ${
+        isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
       }`}
     >
       <div
@@ -79,14 +79,14 @@ const ToastComponent = ({ toast, onRemove }: ToastProps) => {
       >
         <div className="flex-shrink-0">{getIcon()}</div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900">{toast.title}</p>
+          <p className="text-sm font-medium text-slate-800">{toast.title}</p>
           {toast.message && (
-            <p className="text-sm text-gray-600 mt-1">{toast.message}</p>
+            <p className="text-sm text-slate-600 mt-1">{toast.message}</p>
           )}
         </div>
         <button
           onClick={handleRemove}
-          className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+          className="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

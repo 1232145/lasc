@@ -77,7 +77,17 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({
           })
           .map(photo => (
             <div key={photo.id} className="bg-white border rounded-lg shadow-sm p-4">
-              <img src={photo.image_url} alt={photo.title} className="w-full h-48 object-cover rounded mb-2" />
+              {photo.image_url ? (
+                <img
+                  src={photo.image_url}
+                  alt={photo.title}
+                  className="w-full h-48 object-cover rounded mb-2"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded mb-2 text-gray-500">
+                  No Image
+                </div>
+              )}
               <h3 className="font-semibold text-gray-800">{photo.title}</h3>
               <p className="text-sm text-gray-600 truncate">{photo.description}</p>
               <p className="text-xs text-gray-400">Taken: {photo.taken_at?.split("T")[0]}</p>
@@ -91,4 +101,3 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({
     )}
   </div>
 );
-

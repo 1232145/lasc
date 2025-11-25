@@ -55,7 +55,7 @@ export default function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="bg-green-50 border border-green-300 rounded-lg p-4 text-green-700 text-center mb-10">
+      <div className="bg-green-50 border border-green-300 rounded-lg p-4 text-green-800 text-center mb-10 font-medium">
         ✅ Thanks, {submittedName || "friend"}! Your message has been sent.
       </div>
     );
@@ -64,14 +64,14 @@ export default function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white shadow-md rounded-lg p-8 mb-10 max-w-3xl mx-auto"
+      className="card bg-white shadow-lg rounded-xl p-8 mb-10 max-w-3xl mx-auto border border-orange-200"
     >
-      <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+      <h3 className="text-xl font-semibold text-stone-900 mb-4 text-center">
         Send Us a Message
       </h3>
 
       {errorMsg && (
-        <div className="bg-red-50 border border-red-300 text-red-700 text-sm rounded-md p-2 mb-4 text-center">
+        <div className="bg-red-50 border border-red-300 text-red-800 text-sm rounded-md p-3 mb-4 text-center font-medium">
           {errorMsg}
         </div>
       )}
@@ -84,7 +84,7 @@ export default function ContactForm() {
           onChange={handleChange}
           placeholder="Your Name"
           required
-          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="appearance-none block w-full px-4 py-3 border border-orange-300 rounded-lg text-stone-900 placeholder-stone-500 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors"
         />
 
         <input
@@ -94,7 +94,7 @@ export default function ContactForm() {
           onChange={handleChange}
           placeholder="you@example.com"
           required
-          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="appearance-none block w-full px-4 py-3 border border-orange-300 rounded-lg text-stone-900 placeholder-stone-500 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors"
         />
 
         <textarea
@@ -104,17 +104,17 @@ export default function ContactForm() {
           placeholder="Your message..."
           rows={5}
           required
-          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="appearance-none block w-full px-4 py-3 border border-orange-300 rounded-lg text-stone-900 placeholder-stone-500 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-500 transition-colors resize-vertical"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className={`mt-6 w-full text-white font-medium py-3 rounded-md transition-colors ${
+        className={`btn-primary mt-6 w-full text-white font-medium py-3 rounded-xl transition-all duration-300 ${
           loading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700"
+            ? "bg-stone-400 cursor-not-allowed"
+            : "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
         }`}
       >
         {loading ? "Sending..." : "Send Message"}

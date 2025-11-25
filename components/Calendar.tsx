@@ -79,14 +79,14 @@ export default function Calendar() {
     }));
 
   return (
-    <div className="relative printable-calendar">
+    <div className="relative printable-calendar bg-white rounded-xl p-4">
       <PrintCalendarButton></PrintCalendarButton>
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         events={calendarEvents}
         eventContent={(arg) => (
-          <div className="whitespace-normal break-words leading-snug text-sm">
+          <div className="whitespace-normal break-words leading-snug text-sm text-white">
             {arg.event.title}
           </div>
         )}
@@ -98,19 +98,29 @@ export default function Calendar() {
         }}
         dayMaxEventRows={false}
         height="auto"
-        eventColor="#1e40af"
+        eventColor="#ea580c"
+        eventBackgroundColor="#ea580c"
+        eventBorderColor="#fb923c"
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: ''
+        }}
+        themeSystem="bootstrap"
+        dayHeaderClassNames="text-stone-700 font-medium"
+        dayCellClassNames="border-orange-100"
       />
 
       {/* Modal Overlay */}
       {selectedEvent && (
         <div
           onClick={handleOverlayClick}
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300 no-print"
+          className="fixed inset-0 bg-orange-900 bg-opacity-40 flex justify-center items-center z-50 transition-opacity duration-300 no-print"
         >
           {/* Modal Content */}
           <div
             ref={modalRef}
-            className="bg-white rounded-lg shadow-xl p-6 max-w-xl w-full relative animate-fade-in"
+            className="bg-white rounded-xl shadow-2xl p-6 max-w-xl w-full relative animate-fade-in border border-orange-200 mx-4"
             role="dialog"
             aria-modal="true"
           >
@@ -118,7 +128,7 @@ export default function Calendar() {
             <button
               ref={closeButtonRef}
               onClick={() => setSelectedEvent(null)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-3xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+              className="absolute top-2 right-2 text-stone-500 hover:text-orange-600 text-3xl font-bold focus:outline-none focus:ring-2 focus:ring-orange-500 rounded transition-colors"
               aria-label="Close"
             >
               &times;

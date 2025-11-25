@@ -33,12 +33,12 @@ export function SortableHeader<K extends string>({ label, columnKey, sort, onCha
   return (
     <th
       onClick={handleClick}
-      className={(className || '') + ' select-none cursor-pointer'}
+      className={(className || '') + ' select-none cursor-pointer hover:bg-orange-100 transition-colors'}
       title="Click to sort"
     >
       <span className="inline-flex items-center gap-1">
         {label}
-        <span className="text-gray-400 text-xs">{indicator}</span>
+        <span className="text-orange-500 text-xs font-medium">{indicator}</span>
       </span>
     </th>
   );

@@ -71,7 +71,7 @@ export default function CenterClosedPopup() {
       : "Attention: The Center is Closed Today.";
 
   return (
-    <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-red-600 text-white p-4 rounded shadow-lg z-50 max-w-xl text-center">
+    <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-red-600 text-white p-4 rounded-lg shadow-xl border border-red-500 z-50 max-w-xl text-center font-medium">
       {displayMessage}
     </div>
   );

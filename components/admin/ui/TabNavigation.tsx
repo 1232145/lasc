@@ -16,64 +16,64 @@ interface TabNavigationProps {
 }
 
 export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, counts }) => (
-  <div className="border-b border-gray-200">
-    <nav className="flex space-x-8 px-6">
+  <div className="border-b border-orange-200">
+    <nav className="flex space-x-8 px-6 overflow-x-auto">
       <button
         onClick={() => onTabChange('events')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'events'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Events ({counts.events})
       </button>
       <button
         onClick={() => onTabChange('rsvps')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'rsvps'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         RSVPs ({counts.rsvps})
       </button>
       <button
         onClick={() => onTabChange('photos')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'photos'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Photos ({counts.photos})
       </button>
       <button
         onClick={() => onTabChange('board')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'board'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Board ({counts.board})
       </button>
       <button
         onClick={() => onTabChange('resources')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'resources'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Resources ({counts.resources})
       </button>
       <button
         onClick={() => onTabChange('sponsors')}
-        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${
+        className={`py-4 px-1 border-b-2 font-medium text-sm cursor-pointer whitespace-nowrap transition-colors ${
           activeTab === 'sponsors'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700'
+            ? 'border-orange-500 text-orange-600'
+            : 'border-transparent text-stone-500 hover:text-orange-600'
         }`}
       >
         Sponsors ({counts.sponsors})

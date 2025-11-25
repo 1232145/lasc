@@ -4,17 +4,17 @@ export default function ContactSection() {
     return (
       <section
         id="contact"
-        className="py-20 bg-gray-50 border-t border-gray-200 scroll-mt-16"
+        className="py-20 bg-orange-50 border-t border-orange-200 scroll-mt-16 transition-colors duration-300"
       >
         <div className="max-w-6xl mx-auto px-6">
           {/* Title */}
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-3">
+            <h2 className="text-3xl font-bold text-stone-900 mb-3">
               Contact Us
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              We’d love to hear from you or see you at the center. Whether you’d
-              like to join, volunteer, or just stop by — you’re always welcome.
+            <p className="text-stone-600 max-w-2xl mx-auto">
+              We'd love to hear from you or see you at the center. Whether you'd
+              like to join, volunteer, or just stop by — you're always welcome.
             </p>
           </div>
 
@@ -24,52 +24,52 @@ export default function ContactSection() {
           {/* Grid layout */}
           <div className="grid md:grid-cols-2 gap-10 items-start">
             {/* Info card */}
-            <div className="bg-white shadow-md rounded-xl p-8 border border-gray-100">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">
+            <div className="card bg-white shadow-lg rounded-xl p-8 border border-orange-200">
+              <h3 className="text-xl font-semibold text-stone-900 mb-6">
                 Littlestown Area Senior Center
               </h3>
   
-              <ul className="space-y-3 text-gray-700">
+              <ul className="space-y-3 text-stone-700">
                 <li>
-                  <strong>Address:</strong>{" "}
+                  <strong className="text-orange-700">Address:</strong>{" "}
                   <span className="block">
                     10 East Locust Street, Littlestown, PA 17340
                   </span>
                 </li>
   
                 <li>
-                  <strong>Phone:</strong>{" "}
+                  <strong className="text-orange-700">Phone:</strong>{" "}
                   <a
                     href="tel:717-359-7743"
-                    className="text-blue-600 hover:text-blue-700"
+                    className="text-orange-600 hover:text-orange-800 transition-colors font-medium"
                   >
                     (717) 359-7743
                   </a>
                 </li>
   
                 <li>
-                  <strong>Email:</strong>{" "}
+                  <strong className="text-orange-700">Email:</strong>{" "}
                   <a
                     href="mailto:lascinfo@example.com"
-                    className="text-blue-600 hover:text-blue-700"
+                    className="text-orange-600 hover:text-orange-800 transition-colors font-medium"
                   >
                     lascinfo@example.com
                   </a>
                 </li>
   
                 <li>
-                  <strong>Hours:</strong> Mon–Fri, 8:00 AM – 12:30 PM
+                  <strong className="text-orange-700">Hours:</strong> Mon–Fri, 8:00 AM – 12:30 PM
                 </li>
   
                 <li>
-                  <strong>Meetings:</strong> 1st Wednesday of each month at 11:00
+                  <strong className="text-orange-700">Meetings:</strong> 1st Wednesday of each month at 11:00
                   AM
                 </li>
               </ul>
             </div>
   
             {/* Map */}
-            <div className="w-full h-72 md:h-80 rounded-xl overflow-hidden shadow-md border border-gray-100">
+            <div className="w-full h-72 md:h-80 rounded-xl overflow-hidden shadow-lg border border-orange-200">
               <iframe
                 title="LASC location"
                 width="100%"
@@ -84,4 +84,3 @@ export default function ContactSection() {
       </section>
     );
   }
-  

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/ToastContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import RootManageUsersPanel from 'components/RootManageUsersPanel';
-import { StatsCards } from '@/components/admin/ui/StatsCards';
+import StatsCards from '@/components/admin/ui/StatsCards';
 import { TabNavigation } from '@/components/admin/ui/TabNavigation';
 import { EventsTab } from '@/components/admin/tabs/EventsTab';
 import { RSVPsTab } from '@/components/admin/tabs/RSVPsTab';
@@ -16,6 +16,7 @@ import { ResourcesTab } from '@/components/admin/tabs/ResourcesTab';
 import { SponsorsTab } from '@/components/admin/tabs/SponsorsTab';
 import type { Event, RSVP, Photo, BoardMember, Resource, Sponsor } from '@/components/admin/types';
 import AdminCenterToggle from "@/components/admin/AdminCenterToggle";
+import AdminSessionManager from "@/components/admin/AdminSessionManager";
 
 
 export default function AdminPage() {
@@ -39,6 +40,8 @@ export default function AdminPage() {
     title: '',
     description: '',
     date: '',
+    start_time: '',
+    end_time: '',
     location: '',
     capacity: '',
     image_url: ''
@@ -76,6 +79,9 @@ export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [eventsPerPage] = useState(10);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  type EventSortKey = 'title' | 'description' | 'date' | 'location' | 'capacity' | 'rsvps';
+  const [eventSort, setEventSort] = useState<{ key: EventSortKey | null; direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+  const [eventSearchQuery, setEventSearchQuery] = useState('');
   const [editingBoardMember, setEditingBoardMember] = useState<BoardMember | null>(null);
   const [showCreateBoardMember, setShowCreateBoardMember] = useState(false);
   const [isRoot, setIsRoot] = useState(false);
@@ -112,7 +118,7 @@ export default function AdminPage() {
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle() instead of single()
 
       if (error) {
         console.error('Error checking user role:', error.message);
@@ -189,31 +195,77 @@ export default function AdminPage() {
     setSponsors(sponsorsData || []);
     setLoading(false);
 
-    // check if current user has Root-access
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-    setIsRoot(roleData?.role === "root");
+    // Remove duplicate role check - it's already handled in the useEffect above
   };
 
   const getRSVPCountForEvent = (eventId: string) => {
     return rsvps.filter(rsvp => rsvp.event_id === eventId).length;
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(events.length / eventsPerPage);
+  // Filter events by search query
+  const filteredEvents = useMemo(() => {
+    const q = eventSearchQuery.trim().toLowerCase();
+    if (!q) return events;
+    return events.filter((e) => {
+      const title = (e.title || '').toLowerCase();
+      const description = (e.description || '').toLowerCase();
+      const location = (e.location || '').toLowerCase();
+      const date = e.date ? new Date(`${e.date}T00:00:00`).toLocaleDateString().toLowerCase() : '';
+      return (
+        title.includes(q) ||
+        description.includes(q) ||
+        location.includes(q) ||
+        date.includes(q)
+      );
+    });
+  }, [events, eventSearchQuery]);
+
+  // Sort all events before pagination
+  const sortedEvents = useMemo(() => {
+    if (!eventSort.key || !eventSort.direction) return filteredEvents;
+    const arr = [...filteredEvents];
+    arr.sort((a, b) => {
+      const dir = eventSort.direction === 'asc' ? 1 : -1;
+      switch (eventSort.key) {
+        case 'title':
+          return dir * (a.title || '').localeCompare(b.title || '');
+        case 'description':
+          return dir * (a.description || '').localeCompare(b.description || '');
+        case 'date': {
+          const da = a.date ? new Date(`${a.date}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
+          const db = b.date ? new Date(`${b.date}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
+          return dir * (da - db);
+        }
+        case 'location':
+          return dir * (a.location || '').localeCompare(b.location || '');
+        case 'capacity':
+          return dir * (((a.capacity as any) ?? -Infinity) - ((b.capacity as any) ?? -Infinity));
+        case 'rsvps':
+          return dir * (getRSVPCountForEvent(a.id) - getRSVPCountForEvent(b.id));
+        default:
+          return 0;
+      }
+    });
+    return arr;
+  }, [filteredEvents, eventSort, getRSVPCountForEvent]);
+
+  // Pagination logic - paginate after sorting
+  const totalPages = Math.ceil(sortedEvents.length / eventsPerPage);
   const startIndex = (currentPage - 1) * eventsPerPage;
   const endIndex = startIndex + eventsPerPage;
-  const currentEvents = events.slice(startIndex, endIndex);
+  const currentEvents = sortedEvents.slice(startIndex, endIndex);
+
+  // Reset to page 1 when sort or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [eventSort.key, eventSort.direction, eventSearchQuery]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   const clearForm = () => {
-    setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
+    setNewEvent({ title: '', description: '', date: '', start_time: '', end_time: '', location: '', capacity: '', image_url: '' });
   };
 
   const handleCreateNewEvent = () => {
@@ -263,6 +315,8 @@ export default function AdminPage() {
           title: newEvent.title,
           description: newEvent.description || null,
           date: newEvent.date,
+          start_time: newEvent.start_time || null,
+          end_time: newEvent.end_time || null,
           location: newEvent.location || null,
           capacity: newEvent.capacity ? parseInt(newEvent.capacity) : null,
           image_url: newEvent.image_url || null
@@ -275,7 +329,7 @@ export default function AdminPage() {
       }
 
       // Reset form and refresh data
-      setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
+      setNewEvent({ title: '', description: '', date: '', start_time: '', end_time: '', location: '', capacity: '', image_url: '' });
       setShowCreateEvent(false);
       fetchData();
       showSuccess('Success', 'Event created successfully!');
@@ -292,6 +346,8 @@ export default function AdminPage() {
       title: event.title,
       description: event.description || '',
       date: event.date ? event.date.split('T')[0] : '', // Convert to date format
+      start_time: event.start_time || '',
+      end_time: event.end_time || '',
       location: event.location || '',
       capacity: event.capacity?.toString() || '',
       image_url: event.image_url || ''
@@ -313,6 +369,8 @@ export default function AdminPage() {
           title: newEvent.title,
           description: newEvent.description || null,
           date: newEvent.date,
+          start_time: newEvent.start_time || null,
+          end_time: newEvent.end_time || null,
           location: newEvent.location || null,
           capacity: newEvent.capacity ? parseInt(newEvent.capacity) : null,
           image_url: newEvent.image_url || null
@@ -327,7 +385,7 @@ export default function AdminPage() {
 
       // Reset form and refresh data
       setEditingEvent(null);
-      setNewEvent({ title: '', description: '', date: '', location: '', capacity: '', image_url: '' });
+      setNewEvent({ title: '', description: '', date: '', start_time: '', end_time: '', location: '', capacity: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Event updated successfully!');
     } catch (err) {
@@ -375,13 +433,13 @@ export default function AdminPage() {
         year: newPhoto.year ? parseInt(newPhoto.year) : null,
         taken_at: newPhoto.taken_at || null
       }]);
-      
+
       if (error) {
         console.error('Error creating photo:', error);
         showError('Error', 'Failed to add photo. Please try again.');
         return;
       }
-      
+
       setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Photo added successfully!');
@@ -406,7 +464,7 @@ export default function AdminPage() {
   const handleUpdatePhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPhoto) return;
-    
+
     try {
       const { error } = await supabase
         .from('photos')
@@ -443,7 +501,7 @@ export default function AdminPage() {
     });
 
     if (!confirmed) return;
-    
+
     try {
       const { error } = await supabase.from('photos').delete().eq('id', photoId);
       if (error) {
@@ -451,7 +509,7 @@ export default function AdminPage() {
         showError('Error', 'Failed to delete photo. Please try again.');
         return;
       }
-      
+
       fetchData();
       showSuccess('Success', 'Photo deleted successfully!');
     } catch (err) {
@@ -551,12 +609,39 @@ export default function AdminPage() {
         showError('Error', 'Failed to delete board member. Please try again.');
         return;
       }
-      
+
       fetchData();
       showSuccess('Success', 'Board member deleted successfully!');
     } catch (err) {
       console.error('Error deleting board member:', err);
       showError('Error', 'Failed to delete board member. Please try again.');
+    }
+  };
+
+  const handleToggleVisibility = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'visible' ? 'hidden' : 'visible';
+
+    try {
+      const { error } = await supabase
+        .from('board_members')
+        .update({ status: newStatus })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error toggling visibility:', error);
+        showError('Error', 'Failed to toggle board member visibility.');
+        return;
+      }
+
+      // Refresh the list of members
+      fetchData();
+      showSuccess(
+        'Success',
+        `Board member is now ${newStatus === 'visible' ? 'visible' : 'hidden'} on the public site.`
+      );
+    } catch (err) {
+      console.error('Error toggling visibility:', err);
+      showError('Error', 'Failed to toggle board member visibility.');
     }
   };
 
@@ -785,6 +870,12 @@ export default function AdminPage() {
 
 
   // Helper functions for opening/closing forms
+  const closeEventForm = () => {
+    setEditingEvent(null);  // resets editingEvent
+    setShowCreateEvent(false);  // resets create state
+    clearForm();  // clears the form data
+  };
+  
   const openCreatePhoto = () => {
     setEditingPhoto(null);
     setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
@@ -835,11 +926,14 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading admin data...</p>
+      <div>
+        <AdminSessionManager />
+        <div className="min-h-screen bg-orange-50 py-12">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+              <p className="mt-4 text-stone-600">Loading admin data...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -847,43 +941,44 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div>
+      <AdminSessionManager />
+ <div className="min-h-screen bg-orange-50 py-12">
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-8">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage events and RSVPs for LASC</p>
+              <h1 className="text-3xl font-bold text-stone-900 mb-2">Admin Dashboard</h1>
+              <p className="text-stone-600">Manage events and RSVPs for LASC</p>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-stone-500">
                 Logged in as: {user?.email}
               </span>
               <button
                 onClick={handleLogout}
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors cursor-pointer font-medium"
               >
                 Logout
               </button>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Center Status Toggle */}
-  <div className="my-4">
-    <AdminCenterToggle />
-  </div>
+        <div className="my-4">
+          <AdminCenterToggle />
+        </div>
 
-        <StatsCards 
+        <StatsCards
           events={events.length}
           rsvps={rsvps.length}
-          resources={resources.length}
-          photos={photos.length}
           sponsors={sponsors.length}
+          photos={photos.length}
         />
 
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow mb-6">
+        <div className="bg-white rounded-xl shadow-lg mb-6 border border-orange-200">
           <TabNavigation
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -909,6 +1004,7 @@ export default function AdminPage() {
                 totalPages={totalPages}
                 startIndex={startIndex}
                 endIndex={endIndex}
+                totalSortedItems={sortedEvents.length}
                 getRSVPCountForEvent={getRSVPCountForEvent}
                 handleCreateNewEvent={handleCreateNewEvent}
                 handleUpdateEvent={handleUpdateEvent}
@@ -917,11 +1013,21 @@ export default function AdminPage() {
                 handleEditEvent={handleEditEvent}
                 handleDeleteEvent={handleDeleteEvent}
                 handlePageChange={handlePageChange}
+                closeEventForm={closeEventForm}
                 clearForm={clearForm}
+                sort={eventSort}
+                onSortChange={setEventSort}
+                searchQuery={eventSearchQuery}
+                onSearchChange={setEventSearchQuery}
               />
             )}
             {activeTab === 'rsvps' && (
-              <RSVPsTab rsvps={rsvps} />
+              <RSVPsTab 
+                rsvps={rsvps} 
+                onEmailSent={() => {
+                  showSuccess('Emails sent successfully', 'All RSVPs have been notified.');
+                }}
+              />
             )}
             {activeTab === 'photos' && (
               <PhotosTab
@@ -951,6 +1057,7 @@ export default function AdminPage() {
                 handleCreateBoardMember={handleCreateBoardMember}
                 handleEditBoardMember={handleEditBoardMember}
                 handleDeleteBoardMember={handleDeleteBoardMember}
+                handleToggleVisibility={handleToggleVisibility}
                 openCreateBoardMember={openCreateBoardMember}
                 closeBoardMemberForm={closeBoardMemberForm}
               />
@@ -993,6 +1100,7 @@ export default function AdminPage() {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );

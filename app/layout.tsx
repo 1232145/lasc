@@ -6,7 +6,6 @@ import { ConfirmationProvider } from "@/contexts/ConfirmationContext";
 import type { Metadata } from "next";
 import CenterClosedPopup from "@/components/CenterClosedPopup";
 
-
 export const metadata: Metadata = {
   title: "Littlestown Area Senior Center",
   description: "Community and connection for older adults in Littlestown, PA.",
@@ -19,12 +18,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-white text-gray-800">
+      <body className="bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased">
         <ToastProvider>
           <ConfirmationProvider>
             <Navbar />
             <CenterClosedPopup />
-            <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
+            <main>{children}</main>
             <Footer />
           </ConfirmationProvider>
         </ToastProvider>
