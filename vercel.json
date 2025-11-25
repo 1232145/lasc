@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/reset-center-status",
+      "schedule": "0 4,5,6 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-images",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}
+
