@@ -67,9 +67,13 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ToastContext.Provider value={{ showToast, showSuccess, showError, showInfo }}>
       {children}
-      {toasts.map((toast) => (
-        <ToastComponent key={toast.id} toast={toast} onRemove={removeToast} />
-      ))}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 pointer-events-none">
+        {toasts.map((toast) => (
+          <div key={toast.id} className="pointer-events-auto">
+            <ToastComponent toast={toast} onRemove={removeToast} />
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   );
 };

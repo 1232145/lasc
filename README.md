@@ -38,14 +38,29 @@ git push origin feat/fe-01-global-layout
 
 ## Environment Variables
 Copy from `.env.example` to `.env.local` and fill with real Supabase keys and email account information:
-```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-EMAIL_USER=
-EMAIL_APP_PASSWORD=
-```
 
-For email account to work: set up 2-factor authentication, go to mangage passwords, generate app pasword.
+**Required:**
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous/public key
+- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key (for admin operations in API routes)
+- `EMAIL_USER` - Your Gmail address for sending emails
+- `EMAIL_APP_PASSWORD` - Your Gmail app password (not your regular password)
+
+**Optional:**
+- `NEXT_PUBLIC_SITE_URL` - Your site URL (defaults to `http://localhost:3000`). Used for password reset links.
+
+**Getting Supabase Keys:**
+1. Go to your Supabase project dashboard
+2. Navigate to Settings → API
+3. Copy the Project URL → `NEXT_PUBLIC_SUPABASE_URL`
+4. Copy the `anon` `public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+5. Copy the `service_role` `secret` key → `SUPABASE_SERVICE_ROLE_KEY` (⚠️ Keep this secret!)
+
+**Setting up Gmail App Password:**
+1. Enable 2-factor authentication on your Google account
+2. Go to Google Account → Security → 2-Step Verification → App passwords
+3. Generate an app password for "Mail"
+4. Use this password (not your regular Gmail password) for `EMAIL_APP_PASSWORD`
 
 ## Deployment
 Automatic via Vercel (when connected to GitHub).

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/ToastContext";
@@ -79,6 +79,9 @@ export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [eventsPerPage] = useState(10);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  type EventSortKey = 'title' | 'description' | 'date' | 'location' | 'capacity' | 'rsvps';
+  const [eventSort, setEventSort] = useState<{ key: EventSortKey | null; direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+  const [eventSearchQuery, setEventSearchQuery] = useState('');
   const [editingBoardMember, setEditingBoardMember] = useState<BoardMember | null>(null);
   const [showCreateBoardMember, setShowCreateBoardMember] = useState(false);
   const [isRoot, setIsRoot] = useState(false);
@@ -199,11 +202,63 @@ export default function AdminPage() {
     return rsvps.filter(rsvp => rsvp.event_id === eventId).length;
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(events.length / eventsPerPage);
+  // Filter events by search query
+  const filteredEvents = useMemo(() => {
+    const q = eventSearchQuery.trim().toLowerCase();
+    if (!q) return events;
+    return events.filter((e) => {
+      const title = (e.title || '').toLowerCase();
+      const description = (e.description || '').toLowerCase();
+      const location = (e.location || '').toLowerCase();
+      const date = e.date ? new Date(`${e.date}T00:00:00`).toLocaleDateString().toLowerCase() : '';
+      return (
+        title.includes(q) ||
+        description.includes(q) ||
+        location.includes(q) ||
+        date.includes(q)
+      );
+    });
+  }, [events, eventSearchQuery]);
+
+  // Sort all events before pagination
+  const sortedEvents = useMemo(() => {
+    if (!eventSort.key || !eventSort.direction) return filteredEvents;
+    const arr = [...filteredEvents];
+    arr.sort((a, b) => {
+      const dir = eventSort.direction === 'asc' ? 1 : -1;
+      switch (eventSort.key) {
+        case 'title':
+          return dir * (a.title || '').localeCompare(b.title || '');
+        case 'description':
+          return dir * (a.description || '').localeCompare(b.description || '');
+        case 'date': {
+          const da = a.date ? new Date(`${a.date}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
+          const db = b.date ? new Date(`${b.date}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
+          return dir * (da - db);
+        }
+        case 'location':
+          return dir * (a.location || '').localeCompare(b.location || '');
+        case 'capacity':
+          return dir * (((a.capacity as any) ?? -Infinity) - ((b.capacity as any) ?? -Infinity));
+        case 'rsvps':
+          return dir * (getRSVPCountForEvent(a.id) - getRSVPCountForEvent(b.id));
+        default:
+          return 0;
+      }
+    });
+    return arr;
+  }, [filteredEvents, eventSort, getRSVPCountForEvent]);
+
+  // Pagination logic - paginate after sorting
+  const totalPages = Math.ceil(sortedEvents.length / eventsPerPage);
   const startIndex = (currentPage - 1) * eventsPerPage;
   const endIndex = startIndex + eventsPerPage;
-  const currentEvents = events.slice(startIndex, endIndex);
+  const currentEvents = sortedEvents.slice(startIndex, endIndex);
+
+  // Reset to page 1 when sort or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [eventSort.key, eventSort.direction, eventSearchQuery]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -949,6 +1004,7 @@ export default function AdminPage() {
                 totalPages={totalPages}
                 startIndex={startIndex}
                 endIndex={endIndex}
+                totalSortedItems={sortedEvents.length}
                 getRSVPCountForEvent={getRSVPCountForEvent}
                 handleCreateNewEvent={handleCreateNewEvent}
                 handleUpdateEvent={handleUpdateEvent}
@@ -959,10 +1015,19 @@ export default function AdminPage() {
                 handlePageChange={handlePageChange}
                 closeEventForm={closeEventForm}
                 clearForm={clearForm}
+                sort={eventSort}
+                onSortChange={setEventSort}
+                searchQuery={eventSearchQuery}
+                onSearchChange={setEventSearchQuery}
               />
             )}
             {activeTab === 'rsvps' && (
-              <RSVPsTab rsvps={rsvps} />
+              <RSVPsTab 
+                rsvps={rsvps} 
+                onEmailSent={() => {
+                  showSuccess('Emails sent successfully', 'All RSVPs have been notified.');
+                }}
+              />
             )}
             {activeTab === 'photos' && (
               <PhotosTab
