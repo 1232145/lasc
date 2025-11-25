@@ -1,25 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import Image from "next/image";
-
 import { supabase } from "@/lib/supabaseClient";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 const LIMIT = 9;
 
 export default function GalleryClient() {
   const [photos, setPhotos] = useState<any[]>([]);
-
   const [years, setYears] = useState<number[]>([]);
-
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
-
   const [offset, setOffset] = useState(0);
-
   const [loading, setLoading] = useState(true);
-
   const [hasMore, setHasMore] = useState(true);
+  const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
 
   // fetch distinct years once
   useEffect(() => {
@@ -84,6 +80,52 @@ export default function GalleryClient() {
     setOffset(0);
   }
 
+  function openModal(photo: any) {
+    const index = photos.findIndex(p => p.id === photo.id);
+    setSelectedPhoto(photo);
+    setCurrentPhotoIndex(index);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    setSelectedPhoto(null);
+    setCurrentPhotoIndex(0);
+    document.body.style.overflow = 'unset';
+  }
+
+  function navigatePhoto(direction: 'prev' | 'next') {
+    const newIndex = direction === 'prev' 
+      ? (currentPhotoIndex - 1 + photos.length) % photos.length
+      : (currentPhotoIndex + 1) % photos.length;
+    
+    setCurrentPhotoIndex(newIndex);
+    setSelectedPhoto(photos[newIndex]);
+  }
+
+  // Close modal on escape key and handle arrow navigation
+  useEffect(() => {
+    function handleKeyPress(e: KeyboardEvent) {
+      if (!selectedPhoto) return;
+      
+      switch (e.key) {
+        case 'Escape':
+          closeModal();
+          break;
+        case 'ArrowLeft':
+          navigatePhoto('prev');
+          break;
+        case 'ArrowRight':
+          navigatePhoto('next');
+          break;
+      }
+    }
+    
+    if (selectedPhoto) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [selectedPhoto, currentPhotoIndex, photos]);
+
   return (
     <>
       {/* Year filter */}
@@ -113,7 +155,8 @@ export default function GalleryClient() {
             {photos.map((photo) => (
               <div
                 key={photo.id}
-                className="relative group overflow-hidden rounded-xl shadow-lg border border-orange-200 hover:shadow-xl transition-all duration-300"
+                className="relative group overflow-hidden rounded-xl shadow-lg border border-orange-200 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                onClick={() => openModal(photo)}
               >
                 {photo.image_url ? (
                   <Image
@@ -137,9 +180,89 @@ export default function GalleryClient() {
                     )}
                   </div>
                 </div>
+
+                {/* Click indicator */}
+                <div className="absolute top-3 right-3 bg-black/20 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                </div>
               </div>
             ))}
           </div>
+
+          {/* Enhanced Modal with Navigation */}
+          {selectedPhoto && (
+            <div 
+              className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+              onClick={closeModal}
+            >
+              <div className="relative max-w-7xl max-h-full flex items-center">
+                {/* Previous Button */}
+                {photos.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigatePhoto('prev');
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-colors duration-200 backdrop-blur-sm"
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                )}
+
+                {/* Next Button */}
+                {photos.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigatePhoto('next');
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-colors duration-200 backdrop-blur-sm"
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                )}
+
+                {/* Close Button */}
+                <button
+                  onClick={closeModal}
+                  className="absolute -top-12 right-0 text-white hover:text-orange-300 transition-colors z-10"
+                  aria-label="Close modal"
+                >
+                  <X size={32} />
+                </button>
+
+                {/* Photo Counter */}
+                {photos.length > 1 && (
+                  <div className="absolute -top-12 left-0 text-white text-sm bg-black/30 px-3 py-1 rounded-lg backdrop-blur-sm">
+                    {currentPhotoIndex + 1} of {photos.length}
+                  </div>
+                )}
+                
+                <Image
+                  src={selectedPhoto.image_url}
+                  alt={selectedPhoto.title}
+                  width={1200}
+                  height={800}
+                  className="object-contain max-h-[90vh] max-w-full"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                  <h3 className="text-white text-xl font-semibold mb-2">{selectedPhoto.title}</h3>
+                  {selectedPhoto.event_title && (
+                    <p className="text-white/90 text-sm mb-1">Event: {selectedPhoto.event_title}</p>
+                  )}
+                  {selectedPhoto.description && (
+                    <p className="text-white/80 text-sm">{selectedPhoto.description}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {hasMore && (
             <div className="flex justify-center mt-8">
