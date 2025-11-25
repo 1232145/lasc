@@ -1,15 +1,8 @@
 {
   "crons": [
     {
-      "name": "cleanup-images",
-      "path": "/api/cron/cleanup-images",
-      "schedule": "0 1 * * 1",
-      "timezone": "America/New_York",
-      "method": "POST"
-    },
-    {
-      "name": "reset-center-status",
-      "path": "/api/cron/reset-center-status",
+      "name": "daily-cron-tasks",
+      "path": "/api/cron/daily-tasks",
       "schedule": "0 0 * * *",
       "timezone": "America/New_York",
       "method": "POST"
