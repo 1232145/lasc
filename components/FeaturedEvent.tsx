@@ -3,7 +3,10 @@ import { supabase } from "@/lib/supabaseClient";
 export const dynamic = "force-dynamic";
 
 export default async function FeaturedEvent() {
-  const todayDateString = new Date().toISOString().slice(0, 10);
+  // FIX: ensure "today" uses America/New_York timezone
+  const todayDateString = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/New_York" })
+  ).toISOString().slice(0, 10);
 
   const { data, error } = await supabase
     .from("events")
