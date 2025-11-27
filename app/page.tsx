@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import Hero from "@/components/Hero";
 import FeaturedEvent from "@/components/FeaturedEvent";
 import ContactSection from "@/components/ContactSection";
