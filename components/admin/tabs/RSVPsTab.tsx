@@ -120,9 +120,6 @@ export const RSVPsTab: React.FC<RSVPsTabProps> = ({ rsvps, onEmailSent }) => {
             <option value="desc">Newest first</option>
             <option value="asc">Oldest first</option>
           </select>
-          <button className="ml-3 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 cursor-pointer">
-            Export Data
-          </button>
         </div>
       </div>
 
