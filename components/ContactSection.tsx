@@ -13,8 +13,18 @@ export default function ContactSection() {
               Contact Us
             </h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              We'd love to hear from you or see you at the center. Whether you'd
+              We'd love to hear from you or see you at the Center. Whether you'd
               like to join, volunteer, or just stop by — you're always welcome.
+            </p>
+          </div>
+
+          {/* Send Us A Message Section */}
+          <div className="text-center mb-8">
+            <h3 className="text-xl font-semibold text-stone-900 mb-3">
+              Send Us A Message
+            </h3>
+            <p className="text-stone-600 mb-6">
+              We'll respond to your message within 1-2 business days via email or phone.
             </p>
           </div>
 
@@ -50,20 +60,15 @@ export default function ContactSection() {
                 <li>
                   <strong className="text-orange-700">Email:</strong>{" "}
                   <a
-                    href="mailto:lascinfo@example.com"
+                    href="mailto:littlestown@acofa.org"
                     className="text-orange-600 hover:text-orange-800 transition-colors font-medium"
                   >
-                    lascinfo@example.com
+                    littlestown@acofa.org
                   </a>
                 </li>
   
                 <li>
                   <strong className="text-orange-700">Hours:</strong> Mon–Fri, 8:00 AM – 12:30 PM
-                </li>
-  
-                <li>
-                  <strong className="text-orange-700">Meetings:</strong> 1st Wednesday of each month at 11:00
-                  AM
                 </li>
               </ul>
             </div>
