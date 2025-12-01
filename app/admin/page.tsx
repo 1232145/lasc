@@ -50,7 +50,6 @@ export default function AdminPage() {
     title: '',
     description: '',
     event_title: '',
-    year: '',
     taken_at: '',
     image_url: ''
   });
@@ -430,7 +429,6 @@ export default function AdminPage() {
     try {
       const { error } = await supabase.from('photos').insert([{
         ...newPhoto,
-        year: newPhoto.year ? parseInt(newPhoto.year) : null,
         taken_at: newPhoto.taken_at || null
       }]);
 
@@ -440,7 +438,7 @@ export default function AdminPage() {
         return;
       }
 
-      setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+      setNewPhoto({ title: '', description: '', event_title: '', taken_at: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Photo added successfully!');
     } catch (err) {
@@ -455,7 +453,6 @@ export default function AdminPage() {
       title: photo.title,
       description: photo.description || '',
       event_title: photo.event_title || '',
-      year: photo.year?.toString() || '',
       taken_at: photo.taken_at?.split('T')[0] || '',
       image_url: photo.image_url || ''
     });
@@ -470,7 +467,6 @@ export default function AdminPage() {
         .from('photos')
         .update({
           ...newPhoto,
-          year: newPhoto.year ? parseInt(newPhoto.year) : null,
           taken_at: newPhoto.taken_at || null
         })
         .eq('id', editingPhoto.id);
@@ -482,7 +478,7 @@ export default function AdminPage() {
       }
 
       setEditingPhoto(null);
-      setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+      setNewPhoto({ title: '', description: '', event_title: '', taken_at: '', image_url: '' });
       fetchData();
       showSuccess('Success', 'Photo updated successfully!');
     } catch (err) {
@@ -515,6 +511,33 @@ export default function AdminPage() {
     } catch (err) {
       console.error('Error deleting photo:', err);
       showError('Error', 'Failed to delete photo. Please try again.');
+    }
+  };
+
+  const handleBatchPhotoUpload = async (photos: Array<{
+    title: string;
+    description: string;
+    event_title: string;
+    taken_at: string;
+    image_url: string;
+  }>) => {
+    try {
+      const { error } = await supabase.from('photos').insert(photos.map(photo => ({
+        ...photo,
+        taken_at: photo.taken_at || null
+      })));
+
+      if (error) {
+        console.error('Error batch uploading photos:', error);
+        showError('Error', 'Failed to save some photos. Please try again.');
+        return;
+      }
+
+      fetchData();
+      showSuccess('Success', `Successfully uploaded ${photos.length} photo${photos.length !== 1 ? 's' : ''}!`);
+    } catch (err) {
+      console.error('Error batch uploading photos:', err);
+      showError('Error', 'Failed to save photos. Please try again.');
     }
   };
 
@@ -878,13 +901,13 @@ export default function AdminPage() {
   
   const openCreatePhoto = () => {
     setEditingPhoto(null);
-    setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+    setNewPhoto({ title: '', description: '', event_title: '', taken_at: '', image_url: '' });
     setShowCreatePhoto(true);
   };
 
   const closePhotoForm = () => {
     setEditingPhoto(null);
-    setNewPhoto({ title: '', description: '', event_title: '', year: '', taken_at: '', image_url: '' });
+    setNewPhoto({ title: '', description: '', event_title: '', taken_at: '', image_url: '' });
     setShowCreatePhoto(false);
   };
 
@@ -1039,6 +1062,7 @@ export default function AdminPage() {
                 handlePhotoFormChange={handlePhotoFormChange}
                 handleUpdatePhoto={handleUpdatePhoto}
                 handleCreatePhoto={handleCreatePhoto}
+                handleBatchPhotoUpload={handleBatchPhotoUpload}
                 handleEditPhoto={handleEditPhoto}
                 handleDeletePhoto={handleDeletePhoto}
                 setSortPhotosBy={setSortPhotosBy}

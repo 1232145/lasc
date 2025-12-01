@@ -46,7 +46,7 @@ export default async function ResourcesPage() {
           Community Resources
         </h1>
         <p className="text-center text-stone-600 mb-12">
-          Helpful links and programs for older adults in the Littlestown area.
+          Helpful links and programs for community members 60+ in the Littlestown area.
         </p>
 
         {Object.entries(grouped).map(([category, resources]: any) => (

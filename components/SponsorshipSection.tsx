@@ -39,7 +39,7 @@ export default async function SponsorshipSection() {
                 key={sponsor.id}
                 className="card bg-white rounded-xl shadow-lg border border-orange-200 p-6 text-center hover:shadow-xl hover:transform hover:-translate-y-1 transition-all duration-300"
               >
-                {sponsor.logo_url ? (
+                {sponsor.logo_url && (
                   <div className="w-full h-24 relative mb-4">
                     <Image
                       src={sponsor.logo_url}
@@ -47,10 +47,6 @@ export default async function SponsorshipSection() {
                       fill
                       className="object-contain mx-auto"
                     />
-                  </div>
-                ) : (
-                  <div className="h-24 flex items-center justify-center mb-4 text-stone-400 text-sm font-medium">
-                    No Logo
                   </div>
                 )}
 

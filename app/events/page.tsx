@@ -62,7 +62,7 @@ export default async function EventsPage({ searchParams }: any) {
             Upcoming Events
           </h1>
           <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
-            Join us for engaging activities, educational programs, and community gatherings designed for older adults.
+            Join us for engaging activities, educational programs, and community gatherings designed for community members 60+.
           </p>
         </div>
 

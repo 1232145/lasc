@@ -22,8 +22,7 @@ export default async function AboutSection() {
             About the Center
           </h2>
           <p className="text-stone-600 max-w-2xl mx-auto leading-relaxed">
-            The Littlestown Area Senior Center has been serving older adults in
-            Littlestown Borough and surrounding townships since 1975 — providing
+            The Littlestown Area Senior Center has been serving community members 60+ since 1975 — providing
             meals, transportation, social activities, and connection for the
             community.
           </p>

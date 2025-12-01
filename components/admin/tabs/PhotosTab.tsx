@@ -12,6 +12,13 @@ interface PhotosTabProps {
   handlePhotoFormChange: (field: string, value: string) => void;
   handleUpdatePhoto: (e: React.FormEvent) => void;
   handleCreatePhoto: (e: React.FormEvent) => void;
+  handleBatchPhotoUpload: (photos: Array<{
+    title: string;
+    description: string;
+    event_title: string;
+    taken_at: string;
+    image_url: string;
+  }>) => void;
   handleEditPhoto: (photo: Photo) => void;
   handleDeletePhoto: (photoId: string) => void;
   setSortPhotosBy: (value: "uploaded" | "taken") => void;
@@ -28,6 +35,7 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({
   handlePhotoFormChange,
   handleUpdatePhoto,
   handleCreatePhoto,
+  handleBatchPhotoUpload,
   handleEditPhoto,
   handleDeletePhoto,
   setSortPhotosBy,
@@ -37,8 +45,11 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({
   <div>
     <div className="flex justify-between items-center mb-6">
       <h2 className="text-xl font-semibold text-gray-800">Photos</h2>
-      <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer" onClick={openCreatePhoto}>
-        Add New Photo
+      <button 
+        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer" 
+        onClick={openCreatePhoto}
+      >
+        Add Photo(s)
       </button>
     </div>
 
@@ -46,6 +57,7 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({
       <PhotoForm
         isEditing={!!editingPhoto}
         onSubmit={editingPhoto ? handleUpdatePhoto : handleCreatePhoto}
+        onBatchSubmit={handleBatchPhotoUpload}
         onCancel={closePhotoForm}
         formData={newPhoto}
         onFormChange={handlePhotoFormChange}
