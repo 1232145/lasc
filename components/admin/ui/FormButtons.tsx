@@ -5,13 +5,15 @@ interface FormButtonsProps {
   onCancel: () => void;
   submitLabel?: string;
   cancelLabel?: string;
+  disabled?: boolean;
 }
 
 export const FormButtons: React.FC<FormButtonsProps> = ({ 
   isEditing, 
   onCancel, 
   submitLabel, 
-  cancelLabel = 'Cancel' 
+  cancelLabel = 'Cancel',
+  disabled = false
 }) => (
   <div className="flex justify-end space-x-3">
     <button
@@ -23,10 +25,15 @@ export const FormButtons: React.FC<FormButtonsProps> = ({
     </button>
     <button
       type="submit"
-      className={`btn-primary px-4 py-2 text-white rounded-lg cursor-pointer font-medium transition-all duration-300 transform hover:scale-105 shadow-lg ${
-        isEditing
-          ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700'
-          : 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700'
+      disabled={disabled}
+      className={`btn-primary px-4 py-2 text-white rounded-lg font-medium transition-all duration-300 transform shadow-lg ${
+        disabled 
+          ? 'bg-gray-400 cursor-not-allowed opacity-50' 
+          : `cursor-pointer hover:scale-105 ${
+              isEditing
+                ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700'
+                : 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700'
+            }`
       }`}
     >
       {submitLabel || (isEditing ? 'Update' : 'Create')}
