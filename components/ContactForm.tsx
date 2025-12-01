@@ -66,9 +66,6 @@ export default function ContactForm() {
       onSubmit={handleSubmit}
       className="card bg-white shadow-lg rounded-xl p-8 mb-10 max-w-3xl mx-auto border border-orange-200"
     >
-      <h3 className="text-xl font-semibold text-stone-900 mb-4 text-center">
-        Send Us a Message
-      </h3>
 
       {errorMsg && (
         <div className="bg-red-50 border border-red-300 text-red-800 text-sm rounded-md p-3 mb-4 text-center font-medium">
