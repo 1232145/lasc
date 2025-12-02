@@ -53,21 +53,12 @@ export default function GalleryClient() {
     async function fetchPhotos() {
       setLoading(true);
 
+      // Fetch all photos first, then filter client-side for more reliable results
       let query = supabase
         .from("photos")
         .select("*")
-        .order("taken_at", { ascending: false })
-        .range(offset, offset + LIMIT - 1);
-
-      // Filter by year extracted from date fields
-      if (selectedYear) {
-        const yearStart = `${selectedYear}-01-01`;
-        const yearEnd = `${selectedYear}-12-31`;
-        
-        query = query.or(
-          `taken_at.gte.${yearStart},taken_at.lte.${yearEnd},and(taken_at.is.null,created_at.gte.${yearStart},created_at.lte.${yearEnd})`
-        );
-      }
+        .order("taken_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
 
       const { data, error } = await query;
 
@@ -77,13 +68,33 @@ export default function GalleryClient() {
         return;
       }
 
-      if (offset === 0) {
-        setPhotos(data);
-      } else {
-        setPhotos((prev) => [...prev, ...data]);
+      let filteredData = data;
+
+      // Filter by year if selected
+      if (selectedYear) {
+        filteredData = data.filter((photo) => {
+          // Use taken_at if available, otherwise fall back to created_at
+          const dateToUse = photo.taken_at || photo.created_at;
+          if (dateToUse) {
+            const photoYear = new Date(dateToUse).getFullYear();
+            return photoYear === selectedYear;
+          }
+          return false;
+        });
       }
 
-      setHasMore(data.length === LIMIT);
+      // Apply pagination to filtered results
+      const startIndex = offset;
+      const endIndex = offset + LIMIT;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+
+      if (offset === 0) {
+        setPhotos(paginatedData);
+      } else {
+        setPhotos((prev) => [...prev, ...paginatedData]);
+      }
+
+      setHasMore(endIndex < filteredData.length);
       setLoading(false);
     }
 
