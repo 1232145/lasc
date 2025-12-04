@@ -671,8 +671,9 @@ export default function AdminPage() {
   // Resource management functions
   const handleCreateResource = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newResource.title || !newResource.url) {
-      showError('Validation Error', 'Please fill in title and URL');
+    const trimmedCategory = newResource.category?.trim();
+    if (!newResource.title || !newResource.url || !trimmedCategory) {
+      showError('Validation Error', 'Please fill in title, URL, and category');
       return;
     }
 
@@ -683,7 +684,7 @@ export default function AdminPage() {
           title: newResource.title,
           description: newResource.description || null,
           url: newResource.url,
-          category: newResource.category || null
+          category: trimmedCategory
         }]);
 
       if (error) {
@@ -694,7 +695,8 @@ export default function AdminPage() {
 
       setNewResource({ title: '', description: '', url: '', category: '' });
       setShowCreateResource(false);
-      fetchData();
+      setActiveTab('resources'); // Ensure we're on the resources tab
+      await fetchData();
       showSuccess('Success', 'Resource created successfully!');
     } catch (err) {
       console.error('Error creating resource:', err);
@@ -709,14 +711,15 @@ export default function AdminPage() {
       title: resource.title,
       description: resource.description || '',
       url: resource.url,
-      category: resource.category || ''
+      category: resource.category?.trim() || ''
     });
   };
 
   const handleUpdateResource = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingResource || !newResource.title || !newResource.url) {
-      showError('Validation Error', 'Please fill in title and URL');
+    const trimmedCategory = newResource.category?.trim();
+    if (!editingResource || !newResource.title || !newResource.url || !trimmedCategory) {
+      showError('Validation Error', 'Please fill in title, URL, and category');
       return;
     }
 
@@ -727,7 +730,7 @@ export default function AdminPage() {
           title: newResource.title,
           description: newResource.description || null,
           url: newResource.url,
-          category: newResource.category || null
+          category: trimmedCategory
         })
         .eq('id', editingResource.id);
 
@@ -739,7 +742,7 @@ export default function AdminPage() {
 
       setEditingResource(null);
       setNewResource({ title: '', description: '', url: '', category: '' });
-      fetchData();
+      await fetchData();
       showSuccess('Success', 'Resource updated successfully!');
     } catch (err) {
       console.error('Error updating resource:', err);

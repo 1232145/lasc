@@ -68,6 +68,20 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({
     return arr;
   }, [filteredResources, sort]);
 
+  // Extract unique categories from resources (trimmed and sorted)
+  const existingCategories = useMemo(() => {
+    const categories = new Set<string>();
+    resources.forEach((resource) => {
+      if (resource.category) {
+        const trimmed = resource.category.trim();
+        if (trimmed) {
+          categories.add(trimmed);
+        }
+      }
+    });
+    return Array.from(categories).sort();
+  }, [resources]);
+
   return (
   <div>
     <div className="flex justify-between items-center mb-6 gap-3">
@@ -87,6 +101,7 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({
         title={`Edit Resource: ${editingResource.title}`}
         formData={newResource}
         onFormChange={handleResourceFormChange}
+        existingCategories={existingCategories}
       />
     )}
 
@@ -98,6 +113,7 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({
         title="Create New Resource"
         formData={newResource}
         onFormChange={handleResourceFormChange}
+        existingCategories={existingCategories}
       />
     )}
 
