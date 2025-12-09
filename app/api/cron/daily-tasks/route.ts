@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-// Node.js runtime is safer for network requests & larger payloads on Free Tier
-export const runtime = "nodejs";
+// ❗ Must be Edge runtime for Vercel Cron on Free tier
+export const runtime = "edge";
 
-export async function POST(req: NextRequest) {
+// ❗ Vercel Cron sends GET, not POST
+export async function GET() {
   try {
     const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!SUPABASE_KEY) {
