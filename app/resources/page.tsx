@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabaseClient";
 import { ExternalLink } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Resources | Littlestown Area Senior Center",
   description:
